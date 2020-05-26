@@ -113,15 +113,15 @@ namespace Making.Cents
 			var clientId = configuration["clientId"];
 			var secret = configuration["secret"];
 
-			foreach (var (key, value) in configuration.GetSection("accessTokens").AsEnumerable())
+			foreach (var c in configuration.GetSection("accessTokens").GetChildren())
 			{
 				container.RegisterInstance(
 					new PlaidClient(
 						environment: environment,
 						clientId: clientId,
 						secret: secret,
-						accessToken: value),
-					serviceKey: key);
+						accessToken: c.Value),
+					serviceKey: c.Key);
 			}
 		}
 
@@ -133,6 +133,7 @@ namespace Making.Cents
 		private static void RegisterViewModels(Container container)
 		{
 			container.Register<ShellViewModel>(Reuse.Singleton);
+			container.Register<PlaidAccountsViewModel>(Reuse.Singleton);
 		}
 
 		private static void InitializeDatabase(Container container)

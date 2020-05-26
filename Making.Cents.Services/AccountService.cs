@@ -81,7 +81,6 @@ namespace Making.Cents.Services
 					map.GetValueOrDefault(a.Id)
 					?? new Models.Account
 					{
-						AccountId = SequentialGuid.Next(),
 						Name = a.Name,
 
 						AccountType = GetAccountType(a.Type),
@@ -173,6 +172,8 @@ namespace Making.Cents.Services
 
 			if (string.IsNullOrWhiteSpace(account.FullName))
 				throw new ArgumentNullException("account.FullName");
+
+			account.AccountId = SequentialGuid.Next();
 
 			using (var c = _context())
 			{

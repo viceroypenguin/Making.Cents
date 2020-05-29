@@ -5,8 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using DevExpress.Mvvm;
 using DevExpress.Mvvm.DataAnnotations;
+using Making.Cents.Common.Models;
 using Making.Cents.Services;
-using Making.Cents.Services.Models;
 
 namespace Making.Cents.ViewModels
 {

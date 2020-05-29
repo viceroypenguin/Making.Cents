@@ -7,8 +7,9 @@ using System.Linq;
 using LinqToDB;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using Making.Cents.Services.Support;
-using Making.Cents.Services.Enums;
+using Making.Cents.Common.Enums;
+using Making.Cents.Common.Models;
+using Making.Cents.Common.Support;
 
 namespace Making.Cents.Services
 {
@@ -28,28 +29,29 @@ namespace Making.Cents.Services
 					x => x.Value);
 		}
 
-		private List<Models.Account>? _accounts;
-		private Dictionary<string, Models.Account>? _accountsByPlaidId;
+		private List<Account>? _accounts;
+		private Dictionary<string, Account>? _accountsByPlaidId;
 
-		public async ValueTask<IReadOnlyList<Models.Account>> GetDbAccounts()
+		public async ValueTask<IReadOnlyList<Account>> GetDbAccounts()
 		{
 			return _accounts ??= await _();
 
-			async Task<List<Models.Account>> _()
+			async Task<List<Account>> _()
 			{
 				using (var c = _context())
 				{
 					return await c.Accounts
-						.Select(a => new Models.Account
+						.Select(a => new Account
 						{
 							AccountId = a.AccountId,
 							Name = a.Name,
 							FullName = a.FullName,
 
-							AccountType = (AccountType)a.AccountTypeId,
-							AccountSubType = (AccountSubType)a.AccountSubTypeId,
+							AccountType = a.AccountTypeId,
+							AccountSubType = a.AccountSubTypeId,
 
 							ParentAccountId = a.ParentAccountId,
+
 							PlaidSource = a.PlaidSource,
 							PlaidAccountData = string.IsNullOrWhiteSpace(a.PlaidAccountData)
 								? null
@@ -63,7 +65,7 @@ namespace Making.Cents.Services
 		public ValueTask<IEnumerable<string>> GetPlaidSources() =>
 			new ValueTask<IEnumerable<string>>(_plaidClients.Keys);
 
-		public async Task<IReadOnlyList<Models.Account>> GetPlaidAccounts(string source)
+		public async Task<IReadOnlyList<Account>> GetPlaidAccounts(string source)
 		{
 			var dbAccounts = await GetDbAccounts();
 			var plaidAccounts = await _plaidClients[source]
@@ -79,7 +81,7 @@ namespace Making.Cents.Services
 				.Accounts
 				.Select(a =>
 					map.GetValueOrDefault(a.Id)
-					?? new Models.Account
+					?? new Account
 					{
 						Name = a.Name,
 
@@ -165,7 +167,7 @@ namespace Making.Cents.Services
 				_ => AccountSubType.OtherAsset,
 			};
 
-		public async Task AddAccount(Models.Account account)
+		public async Task AddAccount(Common.Models.Account account)
 		{
 			if (string.IsNullOrWhiteSpace(account.Name))
 				throw new ArgumentNullException("account.Name");
@@ -185,8 +187,8 @@ namespace Making.Cents.Services
 							Name = account.Name,
 							FullName = account.FullName,
 
-							AccountTypeId = (int)account.AccountType,
-							AccountSubTypeId = (int)account.AccountSubType,
+							AccountTypeId = account.AccountType,
+							AccountSubTypeId = account.AccountSubType,
 
 							ParentAccountId = account.ParentAccountId,
 

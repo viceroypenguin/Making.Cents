@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using Making.Cents.Services.Enums;
+using Making.Cents.Common.Enums;
 
-namespace Making.Cents.Services.Models
+namespace Making.Cents.Common.Models
 {
 	public class Account
 	{

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Making.Cents.Services.Enums
+namespace Making.Cents.Common.Enums
 {
 	public enum AccountType
 	{

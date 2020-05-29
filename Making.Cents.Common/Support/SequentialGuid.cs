@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Making.Cents.Services.Support
+namespace Making.Cents.Common.Support
 {
 	public static class SequentialGuid
 	{

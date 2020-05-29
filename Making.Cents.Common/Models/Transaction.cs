@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 
-namespace Making.Cents.Services.Models
+namespace Making.Cents.Common.Models
 {
 	public class Transaction
 	{

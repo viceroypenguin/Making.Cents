@@ -21,12 +21,12 @@ namespace Making.Cents.ViewModels
 			_accountService = accountService;
 		}
 
-		public async Task InitializeAsync()
+		public Task InitializeAsync()
 		{
 			if (!PlaidSources.Any())
-				PlaidSources = (await _accountService.GetPlaidSources())
-					.ToArray();
+				PlaidSources = _accountService.GetPlaidSources().ToArray();
 			SelectedPlaidSource = PlaidSources.FirstOrDefault();
+			return Task.CompletedTask;
 		}
 		#endregion
 

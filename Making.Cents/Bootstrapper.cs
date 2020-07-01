@@ -93,15 +93,11 @@ namespace Making.Cents
 				made: Made.Of(method));
 		}
 
-		private static IConfigurationRoot BuildConfiguration()
-		{
-			var builder = new ConfigurationBuilder()
+		private static IConfigurationRoot BuildConfiguration() =>
+			new ConfigurationBuilder()
 				.AddJsonFile("appsettings.json", optional: false)
-				.AddJsonFile("appsettings.secrets.json", optional: true);
-
-			var configuration = builder.Build();
-			return configuration;
-		}
+				.AddJsonFile("appsettings.secrets.json", optional: true)
+				.Build();
 
 		private static void RegisterDataSources(Container container)
 		{

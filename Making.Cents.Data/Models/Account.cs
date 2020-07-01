@@ -27,8 +27,8 @@ namespace Making.Cents.Data.Models
 		[Column, NotNull] public string Name { get; set; } = null!;
 		[Column, NotNull] public string FullName { get; set; } = null!;
 
-		[Column, NotNull] public AccountTypeId AccountTypeId { get; set; }
-		[Column, NotNull] public AccountSubTypeId AccountSubTypeId { get; set; }
+		[Column, NotNull, DataType(LinqToDB.DataType.Int32)] public AccountTypeId AccountTypeId { get; set; }
+		[Column, NotNull, DataType(LinqToDB.DataType.Int32)] public AccountSubTypeId AccountSubTypeId { get; set; }
 
 		[Column, Nullable, DataType(LinqToDB.DataType.Guid)] public AccountId? ParentAccountId { get; set; }
 

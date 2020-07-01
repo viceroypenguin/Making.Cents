@@ -62,8 +62,7 @@ namespace Making.Cents.Services
 			}
 		}
 
-		public ValueTask<IEnumerable<string>> GetPlaidSources() =>
-			new ValueTask<IEnumerable<string>>(_plaidClients.Keys);
+		public IEnumerable<string> GetPlaidSources() => _plaidClients.Keys;
 
 		public async Task<IReadOnlyList<Account>> GetPlaidAccounts(string source)
 		{
@@ -71,6 +70,9 @@ namespace Making.Cents.Services
 			var plaidAccounts = await _plaidClients[source]
 				.FetchAccountAsync(
 					new Acklann.Plaid.Balance.GetAccountRequest());
+
+			if (!plaidAccounts.IsSuccessStatusCode)
+				throw plaidAccounts.Exception;
 
 			var map = _accountsByPlaidId
 				??= dbAccounts
@@ -83,6 +85,7 @@ namespace Making.Cents.Services
 					map.GetValueOrDefault(a.Id)
 					?? new Account
 					{
+						AccountId = SequentialGuid.Next(),
 						Name = a.Name,
 
 						AccountType = GetAccountType(a.Type),
@@ -175,8 +178,6 @@ namespace Making.Cents.Services
 			if (string.IsNullOrWhiteSpace(account.FullName))
 				throw new ArgumentNullException("account.FullName");
 
-			account.AccountId = SequentialGuid.Next();
-
 			using (var c = _context())
 			{
 				_ = await c
@@ -200,6 +201,7 @@ namespace Making.Cents.Services
 			}
 
 			_accounts?.Add(account);
+			_accountsByPlaidId = null;
 		}
 	}
 }

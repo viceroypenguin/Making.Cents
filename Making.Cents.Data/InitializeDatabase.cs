@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using EnumsNET;
 using LinqToDB;
 using LinqToDB.Data;
 using Making.Cents.Data.Models;
@@ -59,9 +60,22 @@ namespace Making.Cents.Data
 			}
 		}
 
-		private void RunEnumScript() =>
-			// always run enums script
-			ExecuteScript("99.Enums.sql");
+		private void RunEnumScript()
+		{
+			AccountTypes
+				.Merge().Using(Enums.GetMembers<Common.Enums.AccountType>())
+				.On((dst, src) => dst.AccountTypeId == src.Value)
+				.InsertWhenNotMatched(src => new AccountType { AccountTypeId = src.Value, Name = src.Name, })
+				.DeleteWhenNotMatchedBySource()
+				.Merge();
+
+			AccountSubTypes
+				.Merge().Using(Enums.GetMembers<Common.Enums.AccountSubType>())
+				.On((dst, src) => dst.AccountSubTypeId == src.Value)
+				.InsertWhenNotMatched(src => new AccountSubType { AccountSubTypeId = src.Value, Name = src.Name, })
+				.DeleteWhenNotMatchedBySource()
+				.Merge();
+		}
 		#endregion
 
 		#region Execute Script

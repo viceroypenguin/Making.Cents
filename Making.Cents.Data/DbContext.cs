@@ -21,6 +21,8 @@ namespace Making.Cents.Data
 			_logger = logger;
 		}
 
+		public ITable<AccountType> AccountTypes => GetTable<AccountType>();
+		public ITable<AccountSubType> AccountSubTypes => GetTable<AccountSubType>();
 		public ITable<Account> Accounts => GetTable<Account>();
 		public ITable<VersionHistory> VersionHistories => GetTable<VersionHistory>();
 	}

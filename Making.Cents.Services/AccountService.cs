@@ -85,7 +85,6 @@ namespace Making.Cents.Services
 					map.GetValueOrDefault(a.Id)
 					?? new Account
 					{
-						AccountId = SequentialGuid.Next(),
 						Name = a.Name,
 
 						AccountType = GetAccountType(a.Type),
@@ -170,7 +169,7 @@ namespace Making.Cents.Services
 				_ => AccountSubType.OtherAsset,
 			};
 
-		public async Task AddAccount(Common.Models.Account account)
+		public async Task<Account> AddAccount(Account account)
 		{
 			if (string.IsNullOrWhiteSpace(account.Name))
 				throw new ArgumentNullException("account.Name");
@@ -180,11 +179,10 @@ namespace Making.Cents.Services
 
 			using (var c = _context())
 			{
-				_ = await c
-					.InsertAsync(
+				var dbAccount = await c.Accounts
+					.InsertWithOutputAsync(
 						new Data.Models.Account
 						{
-							AccountId = account.AccountId,
 							Name = account.Name,
 							FullName = account.FullName,
 
@@ -198,10 +196,14 @@ namespace Making.Cents.Services
 								? JsonConvert.SerializeObject(account.PlaidAccountData)
 								: null,
 						});
+
+				account.AccountId = dbAccount.AccountId;
 			}
 
 			_accounts?.Add(account);
 			_accountsByPlaidId = null;
+
+			return account;
 		}
 	}
 }

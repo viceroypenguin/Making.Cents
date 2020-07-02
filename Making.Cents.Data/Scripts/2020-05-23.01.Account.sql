@@ -16,7 +16,7 @@ create table AccountSubType
 
 create table Account
 (
-	AccountId uniqueidentifier not null
+	AccountId int identity(1,1) not null
 		constraint [PK_Account]
 		primary key,
 	Name varchar(1000) not null,
@@ -29,7 +29,7 @@ create table Account
 		constraint [FK_Account_AccountSubType]
 		foreign key references AccountSubType,
 
-	ParentAccountId uniqueidentifier null
+	ParentAccountId int null
 		constraint [FK_Account_Account]
 		foreign key references Account,
 

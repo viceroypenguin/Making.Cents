@@ -23,14 +23,11 @@ namespace Making.Cents.Data.Models
 	[Table(Schema = "dbo", Name = "Account")]
 	public class Account
 	{
-		[PrimaryKey, NotNull, DataType(LinqToDB.DataType.Guid)] public AccountId AccountId { get; set; }
+		[PrimaryKey, NotNull, DataType(LinqToDB.DataType.Int32)] public AccountId AccountId { get; set; }
 		[Column, NotNull] public string Name { get; set; } = null!;
-		[Column, NotNull] public string FullName { get; set; } = null!;
 
 		[Column, NotNull, DataType(LinqToDB.DataType.Int32)] public AccountTypeId AccountTypeId { get; set; }
 		[Column, NotNull, DataType(LinqToDB.DataType.Int32)] public AccountSubTypeId AccountSubTypeId { get; set; }
-
-		[Column, Nullable, DataType(LinqToDB.DataType.Guid)] public AccountId? ParentAccountId { get; set; }
 
 		[Column, Nullable] public string? PlaidSource { get; set; }
 		[Column, Nullable] public string? PlaidAccountData { get; set; } // json

@@ -11,6 +11,7 @@ using Making.Cents.Common.Enums;
 using Making.Cents.Common.Models;
 using Making.Cents.Common.Support;
 using Dawn;
+using Making.Cents.Common.Ids;
 
 namespace Making.Cents.Services
 {
@@ -46,7 +47,7 @@ namespace Making.Cents.Services
 						{
 							AccountId = a.AccountId,
 							Name = a.Name,
-							FullName = a.FullName,
+							ParentName = a.FullName,
 
 							AccountType = a.AccountTypeId,
 							AccountSubType = a.AccountSubTypeId,
@@ -173,7 +174,7 @@ namespace Making.Cents.Services
 		public async Task<Account> AddAccount(Account account)
 		{
 			Guard.Argument(account.Name, "account.Name").NotWhiteSpace();
-			Guard.Argument(account.FullName, "account.FullName").NotWhiteSpace();
+			Guard.Argument(account.ParentName, "account.FullName").NotWhiteSpace();
 
 			using (var c = _context())
 			{
@@ -182,7 +183,6 @@ namespace Making.Cents.Services
 						new Data.Models.Account
 						{
 							Name = account.Name,
-							FullName = account.FullName,
 
 							AccountTypeId = account.AccountType,
 							AccountSubTypeId = account.AccountSubType,
@@ -202,6 +202,23 @@ namespace Making.Cents.Services
 			_accountsByPlaidId = null;
 
 			return account;
+		}
+
+		public async Task UpdateAccounts(IEnumerable<Account> accounts)
+		{
+			using (var c = _context())
+			{
+				await c.Accounts
+					.Merge().Using(accounts)
+					.On((dst, src) => dst.AccountId == src.AccountId)
+					.UpdateWhenMatched((dst, src) => new Data.Models.Account
+					{
+						Name = src.Name,
+						AccountTypeId = src.AccountType,
+						AccountSubTypeId = src.AccountSubType,
+					})
+					.MergeAsync();
+			}
 		}
 	}
 }

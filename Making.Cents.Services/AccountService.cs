@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using Making.Cents.Common.Enums;
 using Making.Cents.Common.Models;
 using Making.Cents.Common.Support;
+using Dawn;
 
 namespace Making.Cents.Services
 {
@@ -171,11 +172,8 @@ namespace Making.Cents.Services
 
 		public async Task<Account> AddAccount(Account account)
 		{
-			if (string.IsNullOrWhiteSpace(account.Name))
-				throw new ArgumentNullException("account.Name");
-
-			if (string.IsNullOrWhiteSpace(account.FullName))
-				throw new ArgumentNullException("account.FullName");
+			Guard.Argument(account.Name, "account.Name").NotWhiteSpace();
+			Guard.Argument(account.FullName, "account.FullName").NotWhiteSpace();
 
 			using (var c = _context())
 			{

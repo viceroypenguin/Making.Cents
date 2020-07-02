@@ -8,8 +8,8 @@ namespace Making.Cents.Common.Models
 	public class Account
 	{
 		public AccountId AccountId { get; set; }
-		[DisallowNull] public string? Name { get; set; }
-		[DisallowNull] public string? FullName { get; set; }
+		public string Name { get; set; } = string.Empty;
+		public string FullName { get; set; } = string.Empty;
 
 		public AccountType AccountType { get; set; }
 		public AccountSubType AccountSubType { get; set; }

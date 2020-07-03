@@ -4,6 +4,8 @@ using System.Text;
 using System.Threading.Tasks;
 using DevExpress.Mvvm;
 using DevExpress.Mvvm.DataAnnotations;
+using Making.Cents.AccountsModule.ViewModels;
+using Making.Cents.AccountsModule.Views;
 using Making.Cents.Views;
 
 namespace Making.Cents.ViewModels

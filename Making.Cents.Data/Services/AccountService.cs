@@ -13,7 +13,7 @@ using Making.Cents.Common.Support;
 using Dawn;
 using Making.Cents.Common.Ids;
 
-namespace Making.Cents.Services
+namespace Making.Cents.Data.Services
 {
 	public class AccountService
 	{
@@ -47,12 +47,9 @@ namespace Making.Cents.Services
 						{
 							AccountId = a.AccountId,
 							Name = a.Name,
-							ParentName = a.FullName,
 
 							AccountType = a.AccountTypeId,
 							AccountSubType = a.AccountSubTypeId,
-
-							ParentAccountId = a.ParentAccountId,
 
 							PlaidSource = a.PlaidSource,
 							PlaidAccountData = string.IsNullOrWhiteSpace(a.PlaidAccountData)
@@ -174,7 +171,6 @@ namespace Making.Cents.Services
 		public async Task<Account> AddAccount(Account account)
 		{
 			Guard.Argument(account.Name, "account.Name").NotWhiteSpace();
-			Guard.Argument(account.ParentName, "account.FullName").NotWhiteSpace();
 
 			using (var c = _context())
 			{
@@ -186,8 +182,6 @@ namespace Making.Cents.Services
 
 							AccountTypeId = account.AccountType,
 							AccountSubTypeId = account.AccountSubType,
-
-							ParentAccountId = account.ParentAccountId,
 
 							PlaidSource = account.PlaidSource,
 							PlaidAccountData = account.PlaidAccountData != null

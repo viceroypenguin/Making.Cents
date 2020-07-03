@@ -10,7 +10,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace Making.Cents.Views
+namespace Making.Cents.AccountsModule.Views
 {
 	/// <summary>
 	/// Interaction logic for PlaidAccountsView.xaml

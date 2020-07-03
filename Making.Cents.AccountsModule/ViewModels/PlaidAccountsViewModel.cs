@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using DevExpress.Mvvm;
 using DevExpress.Mvvm.DataAnnotations;
 using Making.Cents.Common.Models;
-using Making.Cents.Services;
+using Making.Cents.Data.Services;
 
-namespace Making.Cents.ViewModels
+namespace Making.Cents.AccountsModule.ViewModels
 {
 	public class PlaidAccountsViewModel : ViewModelBase
 	{

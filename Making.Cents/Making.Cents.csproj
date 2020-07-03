@@ -28,8 +28,9 @@
   </ItemGroup>
 
   <ItemGroup>
+		<ProjectReference Include="..\Making.Cents.Common\Making.Cents.Common.csproj" />
 		<ProjectReference Include="..\Making.Cents.Data\Making.Cents.Data.csproj" />
-		<ProjectReference Include="..\Making.Cents.Services\Making.Cents.Services.csproj" />
+		<ProjectReference Include="..\Making.Cents.AccountsModule\Making.Cents.AccountsModule.csproj" />
   </ItemGroup>
 
 	<ItemGroup>

@@ -75,6 +75,13 @@ namespace Making.Cents.Data
 				.InsertWhenNotMatched(src => new AccountSubType { AccountSubTypeId = src.Value, Name = src.Name, })
 				.DeleteWhenNotMatchedBySource()
 				.Merge();
+
+			ClearedStatuses
+				.Merge().Using(Enums.GetMembers<Common.Enums.ClearedStatus>())
+				.On((dst, src) => dst.ClearedStatusId == src.Value)
+				.InsertWhenNotMatched(src => new ClearedStatus { ClearedStatusId = src.Value, Name = src.Name, })
+				.DeleteWhenNotMatchedBySource()
+				.Merge();
 		}
 		#endregion
 

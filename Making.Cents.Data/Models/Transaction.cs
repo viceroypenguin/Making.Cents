@@ -17,6 +17,13 @@ namespace Making.Cents.Data.Models
 		[Column, Nullable] public string? Memo { get; set; }
 	}
 
+	[Table(Schema = "dbo", Name = "ClearedStatus")]
+	public class ClearedStatus
+	{
+		[PrimaryKey, DataType(LinqToDB.DataType.Int32)] public ClearedStatusId ClearedStatusId { get; set; }
+		[Column, NotNull] public string Name { get; set; } = null!;
+	}
+
 	[Table(Schema = "dbo", Name = "TransactionItem")]
 	public class TransactionItem
 	{
@@ -28,6 +35,8 @@ namespace Making.Cents.Data.Models
 		[Column, NotNull] public decimal Shares { get; set; }
 		[Column, NotNull] public decimal Amount { get; set; }
 		[ExpressionMethod(nameof(PerShareExpr), IsColumn = true)] public decimal PerShare { get; set; }
+
+		[Column, NotNull] public ClearedStatusId ClearedStatusId { get; set; }
 		[Column, Nullable] public string? Memo { get; set; }
 
 		private static Expression<Func<TransactionItem, decimal>> PerShareExpr() =>

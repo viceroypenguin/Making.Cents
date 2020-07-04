@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
+using Making.Cents.Common.Enums;
 using Making.Cents.Common.Ids;
 
 namespace Making.Cents.Common.Models
@@ -28,6 +29,8 @@ namespace Making.Cents.Common.Models
 		public decimal Shares { get; set; }
 		public decimal Amount { get; set; }
 		public decimal PerShare => Amount / Shares;
+
+		public ClearedStatus ClearedStatus { get; set; }
 		public string? Memo { get; set; }
 
 		[DisallowNull] public Account? Account { get; set; }

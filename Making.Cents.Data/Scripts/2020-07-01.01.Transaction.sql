@@ -31,6 +31,14 @@ create table [Transaction]
 	Memo varchar(255) null,
 );
 
+create table ClearedStatus
+(
+	ClearedStatusId int not null
+		constraint [PK_ClearedStatus]
+		primary key,
+	Name varchar(50),
+);
+
 create table TransactionItem
 (
 	TransactionId int not null
@@ -47,6 +55,9 @@ create table TransactionItem
 	Amount money not null,
 	PerShare as Amount / Shares persisted not null,
 
+	ClearedStatusId int not null
+		constraint [FK_TransactionItem_ClearedStatus]
+		foreign key references ClearedStatus,
 	Memo varchar(250) null,
 
 	constraint [PK_TransactionItem] 
@@ -58,7 +69,7 @@ create table TransactionItem
 
 create index [IX_TransactionItem_AccountId]
 on TransactionItem(AccountId)
-include (TransactionId, TransactionItemId, StockId, Shares, Amount, PerShare, Memo);
+include (TransactionId, TransactionItemId, StockId, Shares, Amount, PerShare, ClearedStatus, Memo);
 go
 
 create or alter view TransactionBalance

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Making.Cents.Common.Enums;
 
 namespace Making.Cents.Common.Ids
 {
@@ -9,6 +10,15 @@ namespace Making.Cents.Common.Ids
 	{
 		public static implicit operator TransactionId(int transactionId) =>
 			new TransactionId(transactionId);
+	}
+
+	[StronglyTypedId(backingType: StronglyTypedIdBackingType.Int)]
+	public partial struct ClearedStatusId
+	{
+		public static implicit operator ClearedStatus(ClearedStatusId clearedStatus) =>
+			(ClearedStatus)clearedStatus.Value;
+		public static implicit operator ClearedStatusId(ClearedStatus clearedStatus) =>
+			new ClearedStatusId((int)clearedStatus);
 	}
 
 	[StronglyTypedId(backingType: StronglyTypedIdBackingType.Int)]

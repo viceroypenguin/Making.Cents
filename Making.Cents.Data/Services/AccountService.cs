@@ -17,6 +17,7 @@ namespace Making.Cents.Data.Services
 {
 	public class AccountService
 	{
+		#region Initialization
 		private readonly Func<DbContext> _context;
 		private readonly Dictionary<string, PlaidClient> _plaidClients;
 
@@ -30,9 +31,10 @@ namespace Making.Cents.Data.Services
 					x => x.Key,
 					x => x.Value);
 		}
+		#endregion
 
+		#region Query
 		private List<Account>? _accounts;
-		private Dictionary<string, Account>? _accountsByPlaidId;
 
 		public async ValueTask<IReadOnlyList<Account>> GetDbAccounts()
 		{
@@ -60,6 +62,36 @@ namespace Making.Cents.Data.Services
 				}
 			}
 		}
+
+		public async Task<IReadOnlyList<Account>> GetAccountBalances(DateTime date)
+		{
+			using (var c = _context())
+				return await (
+					from t in c.Transactions
+					where t.Date < date
+					from ti in c.TransactionItems.Where(ti => ti.TransactionId == t.TransactionId)
+					from a in c.Accounts.Where(a => a.AccountId == ti.AccountId)
+					from sv in c.StockValues
+						.Where(sv => sv.StockId == ti.StockId)
+						.Where(sv => sv.Date < date)
+						.OrderByDescending(sv => sv.Date)
+						.Take(1)
+					group ti.Shares * sv.Value by a into x
+					select new Account
+					{
+						AccountId = x.Key.AccountId,
+						Name = x.Key.Name,
+						AccountType = x.Key.AccountTypeId,
+						AccountSubType = x.Key.AccountSubTypeId,
+
+						Balance = x.Sum(),
+					})
+					.ToListAsync();
+		}
+		#endregion
+
+		#region Plaid
+		private Dictionary<string, Account>? _accountsByPlaidId;
 
 		public IEnumerable<string> GetPlaidSources() => _plaidClients.Keys;
 
@@ -167,7 +199,9 @@ namespace Making.Cents.Data.Services
 
 				_ => AccountSubType.OtherAsset,
 			};
+		#endregion
 
+		#region Save
 		public async Task<Account> AddAccount(Account account)
 		{
 			Guard.Argument(account.Name, "account.Name").NotWhiteSpace();
@@ -214,5 +248,7 @@ namespace Making.Cents.Data.Services
 					.MergeAsync();
 			}
 		}
+
+		#endregion
 	}
 }

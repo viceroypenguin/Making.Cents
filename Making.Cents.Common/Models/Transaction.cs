@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
+using Making.Cents.Common.Ids;
 
 namespace Making.Cents.Common.Models
 {
 	public class Transaction
 	{
-		public int TransactionId { get; set; }
+		public TransactionId TransactionId { get; set; }
 		public DateTime Date { get; set; }
-		[DisallowNull] public string? Description { get; set; }
+		public string Description { get; set; } = string.Empty;
 		public string? Memo { get; set; }
 
 		public List<TransactionItem> TransactionItems { get; set; } =
@@ -21,10 +22,15 @@ namespace Making.Cents.Common.Models
 
 	public class TransactionItem
 	{
-		public int TransactionItemId { get; set; }
+		public TransactionItemId TransactionItemId { get; set; }
+		public AccountId AccountId { get; set; }
+		public StockId StockId { get; set; }
+		public decimal Shares { get; set; }
 		public decimal Amount { get; set; }
+		public decimal PerShare => Amount / Shares;
 		public string? Memo { get; set; }
 
 		[DisallowNull] public Account? Account { get; set; }
+		[DisallowNull] public Stock? Stock { get; set; }
 	}
 }

@@ -5,7 +5,9 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
-  </PropertyGroup>
+
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+	</PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="DevExpressMvvm" Version="19.2.3" />

@@ -213,3 +213,6 @@ dotnet_diagnostic.CS1998.severity = error
 
 # CS8618: Non-nullable field is uninitialized. Consider declaring as nullable.
 dotnet_diagnostic.CS8618.severity = error
+
+# CS4014: Because this call is not awaited, execution of the current method continues before the call is completed
+dotnet_diagnostic.CS4014.severity = error

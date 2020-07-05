@@ -33,6 +33,7 @@
 		<ProjectReference Include="..\Making.Cents.Common\Making.Cents.Common.csproj" />
 		<ProjectReference Include="..\Making.Cents.Data\Making.Cents.Data.csproj" />
 		<ProjectReference Include="..\Making.Cents.AccountsModule\Making.Cents.AccountsModule.csproj" />
+		<ProjectReference Include="..\Making.Cents.Qif\Making.Cents.Qif.csproj" />
   </ItemGroup>
 
 	<ItemGroup>

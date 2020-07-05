@@ -19,6 +19,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
+using System.Threading.Tasks;
 
 namespace Making.Cents
 {
@@ -38,6 +39,8 @@ namespace Making.Cents
 
 			var logger = container.Resolve<ILogger<Bootstrapper>>();
 			logger.LogDebug("Logging initialized");
+
+			Task.Run(() => Qif.Qif.ReadFile(@"C:\Users\stuar\OneDrive\Documents\Finances\my money.qif", container.Resolve<ILogger<Qif.Qif>>())).Wait();
 
 			RegisterDataSources(container);
 			RegisterServices(container);
@@ -66,7 +69,7 @@ namespace Making.Cents
 
 			Log.Logger = new LoggerConfiguration()
 				.Enrich.FromLogContext()
-				.MinimumLevel.Debug()
+				.MinimumLevel.Verbose()
 				.WriteTo.Console(
 					outputTemplate: "{Timestamp:HH:mm:ss.fff} [{Level:u3}] {Message:lj} <s:{SourceContext}>{NewLine}{Exception}",
 					theme: AnsiConsoleTheme.Code)

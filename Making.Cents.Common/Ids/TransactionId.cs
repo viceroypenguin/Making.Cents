@@ -8,7 +8,9 @@ namespace Making.Cents.Common.Ids
 	[StronglyTypedId(backingType: StronglyTypedIdBackingType.Int)]
 	public partial struct TransactionId
 	{
-		public static implicit operator TransactionId(int transactionId) =>
+		public static implicit operator int(TransactionId transactionId) =>
+			transactionId.Value;
+		public static explicit operator TransactionId(int transactionId) =>
 			new TransactionId(transactionId);
 	}
 
@@ -24,7 +26,9 @@ namespace Making.Cents.Common.Ids
 	[StronglyTypedId(backingType: StronglyTypedIdBackingType.Int)]
 	public partial struct TransactionItemId
 	{
-		public static implicit operator TransactionItemId(int transactionItemId) =>
+		public static implicit operator int(TransactionItemId transactionItemId) =>
+			transactionItemId.Value;
+		public static explicit operator TransactionItemId(int transactionItemId) =>
 			new TransactionItemId(transactionItemId);
 	}
 }

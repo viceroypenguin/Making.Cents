@@ -1,13 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Making.Cents.Common.Enums;
 using Making.Cents.Common.Extensions;
+using Making.Cents.Common.Ids;
 using Making.Cents.Common.Models;
 using Microsoft.Extensions.Logging;
+
+using static MoreLinq.Extensions.SegmentExtension;
 
 namespace Making.Cents.Qif
 {
@@ -27,8 +32,6 @@ namespace Making.Cents.Qif
 		#endregion
 
 		#region Properties
-		public Dictionary<string, Account> Accounts { get; } = new Dictionary<string, Account>(StringComparer.OrdinalIgnoreCase);
-		public Dictionary<string, Stock> Stocks { get; } = new Dictionary<string, Stock>(StringComparer.OrdinalIgnoreCase);
 		#endregion
 
 		#region Parser
@@ -47,6 +50,25 @@ namespace Making.Cents.Qif
 			private List<string> _record = null!;
 			private int _lineNumber = 0;
 
+			private readonly Dictionary<string, Account> _accounts = new Dictionary<string, Account>(StringComparer.OrdinalIgnoreCase);
+			private readonly Dictionary<string, Stock> _stocks = new Dictionary<string, Stock>(StringComparer.OrdinalIgnoreCase);
+
+			private readonly List<Transaction> _transactions = new List<Transaction>();
+			private readonly Dictionary<(Account fromAccount, Account toAccount, DateTime date, decimal amount), Transaction> _transfers =
+				new Dictionary<(Account fromAccount, Account toAccount, DateTime date, decimal amount), Transaction>(new TransactionComparer());
+
+			private class TransactionComparer : IEqualityComparer<(Account fromAccount, Account toAccount, DateTime date, decimal amount)>
+			{
+				public bool Equals([AllowNull] (Account fromAccount, Account toAccount, DateTime date, decimal amount) x, [AllowNull] (Account fromAccount, Account toAccount, DateTime date, decimal amount) y) =>
+					(x.fromAccount.Name == y.fromAccount.Name)
+					&& (x.toAccount.Name == y.toAccount.Name)
+					&& (x.date == y.date)
+					&& (x.amount == y.amount);
+
+				public int GetHashCode([DisallowNull] (Account fromAccount, Account toAccount, DateTime date, decimal amount) obj) =>
+					HashCode.Combine(obj.fromAccount.Name, obj.toAccount, obj.date, obj.amount);
+			}
+
 			public async Task<Qif> Parse()
 			{
 				await GetNextRecord();
@@ -54,7 +76,7 @@ namespace Making.Cents.Qif
 				while (true)
 				{
 					if (_record == null)
-						return _qif;
+						break;
 
 					switch (_record[0])
 					{
@@ -75,6 +97,8 @@ namespace Making.Cents.Qif
 							throw new InvalidOperationException($"Invalid .qif file. Unable to parse section type '{_record[0]}'");
 					}
 				}
+
+				return _qif;
 			}
 
 			private async Task GetNextRecord()
@@ -116,7 +140,7 @@ namespace Making.Cents.Qif
 						return;
 
 					var dict = _record.Where(x => x[0] != 'B').ToDictionary(x => x[0], x => x[1..]);
-					_currentAccount = _qif.Accounts.GetOrAdd(
+					_currentAccount = _accounts.GetOrAdd(
 						dict['N'],
 						name =>
 						{
@@ -169,9 +193,116 @@ namespace Making.Cents.Qif
 				throw new NotImplementedException();
 			}
 
-			private Task ParseNonInvestmentTransactions()
+			private async Task ParseNonInvestmentTransactions()
 			{
-				throw new NotImplementedException();
+				_record.RemoveAt(0);
+
+				while (true)
+				{
+					if (_record[0][0] == '!')
+						return;
+
+					var dict = _record.TakeWhile(s => s[0] != 'S').ToDictionary(x => x[0], x => x[1..]);
+					var date = DateTime.ParseExact(dict['D'], new[] { @"M\/dd\'yy", @"M\/ d\'yy", @"M\/dd\' y", @"M\/ d\' y", }, null, System.Globalization.DateTimeStyles.None);
+
+					var amount = Convert.ToDecimal(dict['T']);
+
+					var payor = dict.GetOrDefault('P', string.Empty);
+					var memo = dict.GetOrDefault('M');
+					var cleared = dict.GetOrDefault('C') switch
+					{
+						"c" => ClearedStatus.Cleared,
+						"R" => ClearedStatus.Reconciled,
+						_ => ClearedStatus.None,
+					};
+
+					var transaction = new Transaction
+					{
+						Date = date,
+						Description = payor,
+						Memo = memo,
+						TransactionItems =
+						{
+							new TransactionItem
+							{
+								Account = GetCurrentAccount(),
+								StockId = (StockId)0,
+								Amount = amount,
+								Shares = amount,
+								ClearedStatus = cleared,
+								Memo = memo,
+							},
+						}
+					};
+
+					// assumptions. awful file format. kill me now.
+					var splits = _record
+						.SkipWhile(s => s[0] != 'S')
+						.TakeWhile(s => s[0] != '^')
+						.Segment(s => s[0] == 'S')
+						.Select(arr => arr.ToDictionary(s => s[0], s => s.Length == 1 ? "Miscellaneous" : s[1..]))
+						.Select(d => (account: d['S'], amount: -Convert.ToDecimal(d['$']), memo: d.GetOrDefault('E')))
+						.ToArray();
+
+					// my own terrible record keeping?
+					var destination = dict.GetOrDefault('L', "Miscellaneous");
+					if (!splits.Any())
+						splits = new[] { (account: destination, amount: -amount, memo: default(string)), };
+
+					transaction.TransactionItems.AddRange(
+						splits
+							.Select(s => new TransactionItem
+							{
+								Account = _accounts[s.account[0] == '[' ? s.account[1..^1] : s.account],
+								StockId = (StockId)0,
+								Amount = s.amount,
+								Shares = s.amount,
+								Memo = s.memo,
+							}));
+
+					if (transaction.Balance != 0)
+						throw new InvalidOperationException("Transaction out of balance!!");
+
+					var transferSplits = splits.Where(s => s.account[0] == '[').Select(s => s.account[1..^1]).ToArray();
+					if (transferSplits.Any())
+					{
+						if (transferSplits.Any(s => s == GetCurrentAccount().Name))
+							throw new NotImplementedException();
+
+						var existingTransfers = transferSplits
+							.Select(s => _transfers.GetOrDefault((_accounts[s], GetCurrentAccount(), date, Math.Abs(amount))))
+							.Where(t => t != null)
+							.ToArray();
+						if (existingTransfers.Length == 1 && splits.Length == 1)
+						{
+							existingTransfers[0]!.TransactionItems
+								.FirstOrDefault(ti => ReferenceEquals(ti.Account, GetCurrentAccount()))
+								.ClearedStatus = cleared;
+						}
+						else
+						{
+							foreach (var t in existingTransfers)
+							{
+								_transactions.Remove(t!);
+
+								var existingItem = t!.TransactionItems[0];
+								var account = existingItem.Account;
+
+								foreach (var ti in transaction.TransactionItems.Where(ti => ReferenceEquals(ti.Account, account)))
+									ti.ClearedStatus = existingItem.ClearedStatus;
+							}
+
+							_transactions.Add(transaction);
+
+							foreach (var s in splits.Where(s => s.account[0] == '['))
+								_transfers[(GetCurrentAccount(), _accounts[s.account[1..^1]], date, Math.Abs(s.amount))] = transaction;
+						}
+					}
+					else
+						_transactions.Add(transaction);
+
+					await GetNextRecord();
+				}
 			}
 
 			private Task ParseClassifications()
@@ -198,7 +329,7 @@ namespace Making.Cents.Qif
 						return;
 
 					var dict = _record.ToDictionary(x => x[0], x => x[1..]);
-					_qif.Stocks.GetOrAdd(
+					_stocks.GetOrAdd(
 						dict['N'],
 						_ => new Stock
 						{

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -188,9 +189,340 @@ namespace Making.Cents.Qif
 					_ => throw new InvalidOperationException($"Unknown account type: '{detail}'."),
 				};
 
-			private Task ParseInvestmentTransactions()
+			private async Task ParseInvestmentTransactions()
 			{
-				throw new NotImplementedException();
+				_record.RemoveAt(0);
+
+				while (true)
+				{
+					if (_record[0][0] == '!')
+						return;
+
+					var dict = _record.TakeWhile(s => s[0] != 'S').ToDictionary(x => x[0], x => x[1..]);
+					var date = DateTime.ParseExact(dict['D'], new[] { @"M\/dd\'yy", @"M\/ d\'yy", @"M\/dd\' y", @"M\/ d\' y", }, null, System.Globalization.DateTimeStyles.None);
+
+					var cashAmount = Convert.ToDecimal(dict.GetOrDefault('T', "0.00"));
+
+					var payor = dict.GetOrDefault('P', string.Empty);
+					var memo = dict.GetOrDefault('M');
+					var cleared = dict.GetOrDefault('C') switch
+					{
+						"c" => ClearedStatus.Cleared,
+						"R" => ClearedStatus.Reconciled,
+						_ => ClearedStatus.None,
+					};
+
+					var transaction = new Transaction
+					{
+						Date = date,
+						Description = payor,
+						Memo = memo,
+						TransactionItems =
+						{
+							new TransactionItem
+							{
+								Account = GetCurrentAccount(),
+								StockId = (StockId)0,
+								ClearedStatus = cleared,
+								Memo = memo,
+							},
+						}
+					};
+
+					switch (dict['N'])
+					{
+						case "WithdrwX":
+						case "XOut":
+							cashAmount = -cashAmount;
+							goto case "XIn";
+
+						case "Cash":
+						case "XIn":
+						case "ContribX":
+						{
+							transaction.TransactionItems[0].Amount = cashAmount;
+							transaction.TransactionItems[0].Shares = cashAmount;
+
+							// my own terrible record keeping?
+							var destination = dict.GetOrDefault('L', "Miscellaneous");
+							HandleCashTransaction(
+								date,
+								cashAmount,
+								cleared,
+								transaction,
+								new[]
+								{
+									(destination, -cashAmount, default(string?)),
+								});
+							break;
+						}
+
+						case "Buy":
+						{
+							transaction.TransactionItems[0].Amount = -cashAmount;
+							transaction.TransactionItems[0].Shares = -cashAmount;
+
+							transaction.TransactionItems.Add(
+								new TransactionItem
+								{
+									Account = GetCurrentAccount(),
+									Stock = _stocks[dict['Y']],
+									Amount = cashAmount,
+									Shares = Convert.ToDecimal(dict['Q']),
+								});
+
+							if (dict.TryGetValue('O', out var commission))
+							{
+								var amt = Convert.ToDecimal(commission);
+								transaction.TransactionItems[1].Amount -= amt;
+
+								transaction.TransactionItems.Add(
+									new TransactionItem
+									{
+										Account = _accounts["Fees"],
+										StockId = (StockId)0,
+										Amount = amt,
+										Shares = amt,
+									});
+							}
+
+							if (Math.Abs(transaction.TransactionItems[1].PerShare - Convert.ToDecimal(dict['I'])) > 0.01m)
+								throw new InvalidOperationException();
+
+							_transactions.Add(transaction);
+							break;
+						}
+
+						case "Sell":
+						{
+							transaction.TransactionItems[0].Amount = cashAmount;
+							transaction.TransactionItems[0].Shares = cashAmount;
+
+							transaction.TransactionItems.Add(
+								new TransactionItem
+								{
+									Account = GetCurrentAccount(),
+									Stock = _stocks[dict['Y']],
+									Amount = -cashAmount,
+									Shares = -Convert.ToDecimal(dict['Q']),
+								});
+
+							if (dict.TryGetValue('O', out var commission))
+							{
+								var amt = Convert.ToDecimal(commission);
+								transaction.TransactionItems[1].Amount -= amt;
+
+								transaction.TransactionItems.Add(
+									new TransactionItem
+									{
+										Account = _accounts["Fees"],
+										StockId = (StockId)0,
+										Amount = amt,
+										Shares = amt,
+									});
+							}
+
+							if (Math.Abs(transaction.TransactionItems[1].PerShare - Convert.ToDecimal(dict['I'])) > 0.01m)
+								throw new InvalidOperationException();
+
+							_transactions.Add(transaction);
+							break;
+						}
+
+						case "SellX":
+						{
+							var destination = dict['L'][1..^1];
+							var account = _accounts[destination];
+
+							if (_transfers.TryGetValue((account, GetCurrentAccount(), date, Math.Abs(cashAmount)), out var tfrTransaction))
+							{
+								tfrTransaction.TransactionItems[1].Stock = _stocks[dict['Y']];
+								tfrTransaction.TransactionItems[1].Shares = -Convert.ToDecimal(dict['Q']);
+
+								if (Math.Abs(tfrTransaction.TransactionItems[1].PerShare - Convert.ToDecimal(dict['I'])) > 0.01m)
+									throw new InvalidOperationException();
+								break;
+							}
+							else
+							{
+								transaction.TransactionItems[0].Account = account;
+								_transfers[(GetCurrentAccount(), account, date, Math.Abs(cashAmount))] = transaction;
+								goto case "Sell";
+							}
+						}
+
+						case "RtrnCap":
+						case "Div":
+							if (string.IsNullOrWhiteSpace(transaction.Description))
+								transaction.Description = "Dividend Distribution";
+
+							transaction.TransactionItems[0].Amount = cashAmount;
+							transaction.TransactionItems[0].Shares = cashAmount;
+
+							// so we know which stock delivered the dividend
+							if (dict.ContainsKey('Y'))
+								transaction.TransactionItems.Add(
+									new TransactionItem
+									{
+										Account = GetCurrentAccount(),
+										Stock = _stocks[dict['Y']],
+										Amount = 0,
+										Shares = 0,
+									});
+
+							// dividend income
+							transaction.TransactionItems.Add(
+								new TransactionItem
+								{
+									Account = _accounts["Investment Income:Dividends"],
+									StockId = (StockId)0,
+									Amount = -cashAmount,
+									Shares = -cashAmount,
+								});
+
+							_transactions.Add(transaction);
+							break;
+
+						case "ReinvSh":
+						case "ReinvLg":
+						case "ReinvDiv":
+							if (string.IsNullOrWhiteSpace(transaction.Description))
+								transaction.Description = "Reinvest Dividend";
+
+							// stock repurchase
+							transaction.TransactionItems.Add(
+								new TransactionItem
+								{
+									Account = GetCurrentAccount(),
+									Stock = _stocks[dict['Y']],
+									Amount = cashAmount,
+									Shares = Convert.ToDecimal(dict['Q']),
+								});
+
+							if (Math.Abs(transaction.TransactionItems[1].PerShare - Convert.ToDecimal(dict['I'])) > 0.01m)
+								throw new InvalidOperationException();
+
+							// dividend income
+							transaction.TransactionItems.Add(
+								new TransactionItem
+								{
+									Account = _accounts["Investment Income:Dividends"],
+									StockId = (StockId)0,
+									Amount = -cashAmount,
+									Shares = -cashAmount,
+								});
+
+							_transactions.Add(transaction);
+							break;
+
+						case "ShrsOut":
+							break;
+
+						case "ShrsIn":
+						{
+							var stock = _stocks[dict['Y']];
+							var qty = Convert.ToDecimal(dict['Q']);
+
+							transaction.TransactionItems.Clear();
+							transaction.TransactionItems.Add(
+								new TransactionItem
+								{
+									Account = GetCurrentAccount(),
+									Stock = stock,
+									Amount = cashAmount,
+									Shares = qty,
+								});
+							transaction.TransactionItems.Add(
+								new TransactionItem
+								{
+									Account = _accounts[memo?.Replace("Xfr From: ", "") ?? "Initial Equity"],
+									Stock = stock,
+									Amount = -cashAmount,
+									Shares = -qty,
+								});
+
+							if (Math.Abs(transaction.TransactionItems[0].PerShare - Convert.ToDecimal(dict['I'])) > 0.01m)
+								throw new InvalidOperationException();
+							if (Math.Abs(transaction.TransactionItems[1].PerShare - Convert.ToDecimal(dict['I'])) > 0.01m)
+								throw new InvalidOperationException();
+
+							_transactions.Add(transaction);
+							break;
+						}
+
+						case "StkSplit":
+							if (string.IsNullOrWhiteSpace(transaction.Description))
+								transaction.Description = "Stock Split";
+
+							transaction.TransactionItems.Add(
+								new TransactionItem
+								{
+									Account = GetCurrentAccount(),
+									Stock = _stocks[dict['Y']],
+									Shares = Convert.ToDecimal(dict['Q']),
+								});
+
+							_transactions.Add(transaction);
+							break;
+
+						case "Rename":
+						{
+							if (string.IsNullOrWhiteSpace(transaction.Description))
+								transaction.Description = "Stock Rename";
+
+							var qty = Convert.ToDecimal(dict['Q']);
+							transaction.TransactionItems.Clear();
+							transaction.TransactionItems.Add(
+								new TransactionItem
+								{
+									Account = GetCurrentAccount(),
+									Stock = _stocks[dict['Y']],
+									Amount = -cashAmount,
+									Shares = -qty,
+								});
+							transaction.TransactionItems.Add(
+								new TransactionItem
+								{
+									Account = GetCurrentAccount(),
+									Stock = _stocks[dict['Z']],
+									Amount = cashAmount,
+									Shares = qty,
+								});
+
+							if (Math.Abs(transaction.TransactionItems[0].PerShare - Convert.ToDecimal(dict['I'])) > 0.01m)
+								throw new InvalidOperationException();
+							if (Math.Abs(transaction.TransactionItems[1].PerShare - Convert.ToDecimal(dict['I'])) > 0.01m)
+								throw new InvalidOperationException();
+
+							_transactions.Add(transaction);
+							break;
+						}
+
+						case "IntInc":
+							transaction.TransactionItems[0].Amount = cashAmount;
+							transaction.TransactionItems[0].Shares = cashAmount;
+
+							transaction.TransactionItems.Add(
+								new TransactionItem
+								{
+									Account = _accounts["Investment Income:Interest"],
+									StockId = (StockId)0,
+									Amount = -cashAmount,
+									Shares = -cashAmount,
+								});
+
+							_transactions.Add(transaction);
+							break;
+
+						default:
+							throw new NotImplementedException();
+					}
+
+					if (transaction.Balance != 0)
+						throw new InvalidOperationException("Transaction out of balance!!");
+
+					await GetNextRecord();
+				}
 			}
 
 			private async Task ParseNonInvestmentTransactions()
@@ -247,62 +579,67 @@ namespace Making.Cents.Qif
 					// my own terrible record keeping?
 					var destination = dict.GetOrDefault('L', "Miscellaneous");
 					if (!splits.Any())
-						splits = new[] { (account: destination, amount: -amount, memo: default(string)), };
+						splits = new[] { (account: destination, amount: -amount, memo: default(string?)), };
 
-					transaction.TransactionItems.AddRange(
-						splits
-							.Select(s => new TransactionItem
-							{
-								Account = _accounts[s.account[0] == '[' ? s.account[1..^1] : s.account],
-								StockId = (StockId)0,
-								Amount = s.amount,
-								Shares = s.amount,
-								Memo = s.memo,
-							}));
+					HandleCashTransaction(date, amount, cleared, transaction, splits);
 
 					if (transaction.Balance != 0)
 						throw new InvalidOperationException("Transaction out of balance!!");
 
-					var transferSplits = splits.Where(s => s.account[0] == '[').Select(s => s.account[1..^1]).ToArray();
-					if (transferSplits.Any())
-					{
-						if (transferSplits.Any(s => s == GetCurrentAccount().Name))
-							throw new NotImplementedException();
-
-						var existingTransfers = transferSplits
-							.Select(s => _transfers.GetOrDefault((_accounts[s], GetCurrentAccount(), date, Math.Abs(amount))))
-							.Where(t => t != null)
-							.ToArray();
-						if (existingTransfers.Length == 1 && splits.Length == 1)
-						{
-							existingTransfers[0]!.TransactionItems
-								.FirstOrDefault(ti => ReferenceEquals(ti.Account, GetCurrentAccount()))
-								.ClearedStatus = cleared;
-						}
-						else
-						{
-							foreach (var t in existingTransfers)
-							{
-								_transactions.Remove(t!);
-
-								var existingItem = t!.TransactionItems[0];
-								var account = existingItem.Account;
-
-								foreach (var ti in transaction.TransactionItems.Where(ti => ReferenceEquals(ti.Account, account)))
-									ti.ClearedStatus = existingItem.ClearedStatus;
-							}
-
-							_transactions.Add(transaction);
-
-							foreach (var s in splits.Where(s => s.account[0] == '['))
-								_transfers[(GetCurrentAccount(), _accounts[s.account[1..^1]], date, Math.Abs(s.amount))] = transaction;
-						}
-					}
-					else
-						_transactions.Add(transaction);
-
 					await GetNextRecord();
 				}
+			}
+
+			private void HandleCashTransaction(DateTime date, decimal amount, ClearedStatus cleared, Transaction transaction, (string account, decimal amount, string? memo)[] splits)
+			{
+				transaction.TransactionItems.AddRange(
+					splits
+						.Select(s => new TransactionItem
+						{
+							Account = _accounts[s.account[0] == '[' ? s.account[1..^1] : s.account],
+							StockId = (StockId)0,
+							Amount = s.amount,
+							Shares = s.amount,
+							Memo = s.memo,
+						}));
+
+				var transferSplits = splits.Where(s => s.account[0] == '[').Select(s => s.account[1..^1]).ToArray();
+				if (transferSplits.Any())
+				{
+					if (transferSplits.Any(s => s == GetCurrentAccount().Name))
+						throw new NotImplementedException();
+
+					var existingTransfers = transferSplits
+						.Select(s => _transfers.GetOrDefault((_accounts[s], GetCurrentAccount(), date, Math.Abs(amount))))
+						.Where(t => t != null)
+						.ToArray();
+					if (existingTransfers.Length == 1 && splits.Length == 1)
+					{
+						existingTransfers[0]!.TransactionItems
+							.FirstOrDefault(ti => ReferenceEquals(ti.Account, GetCurrentAccount()))
+							.ClearedStatus = cleared;
+					}
+					else
+					{
+						foreach (var t in existingTransfers)
+						{
+							_transactions.Remove(t!);
+
+							var existingItem = t!.TransactionItems[0];
+							var account = existingItem.Account;
+
+							foreach (var ti in transaction.TransactionItems.Where(ti => ReferenceEquals(ti.Account, account)))
+								ti.ClearedStatus = existingItem.ClearedStatus;
+						}
+
+						_transactions.Add(transaction);
+
+						foreach (var s in splits.Where(s => s.account[0] == '['))
+							_transfers[(GetCurrentAccount(), _accounts[s.account[1..^1]], date, Math.Abs(s.amount))] = transaction;
+					}
+				}
+				else
+					_transactions.Add(transaction);
 			}
 
 			private Task ParseClassifications()

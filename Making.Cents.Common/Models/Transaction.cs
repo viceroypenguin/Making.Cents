@@ -25,7 +25,7 @@ namespace Making.Cents.Common.Models
 	{
 		public TransactionItemId TransactionItemId { get; set; }
 		public AccountId AccountId { get; set; }
-		public StockId StockId { get; set; }
+		public SecurityId StockId { get; set; }
 		public decimal Shares { get; set; }
 		public decimal Amount { get; set; }
 		public decimal PerShare => Amount / Shares;
@@ -34,6 +34,6 @@ namespace Making.Cents.Common.Models
 		public string? Memo { get; set; }
 
 		[DisallowNull] public Account? Account { get; set; }
-		[DisallowNull] public Stock? Stock { get; set; }
+		[DisallowNull] public Security? Stock { get; set; }
 	}
 }

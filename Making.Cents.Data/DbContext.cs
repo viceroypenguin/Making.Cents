@@ -25,8 +25,8 @@ namespace Making.Cents.Data
 		public ITable<AccountSubType> AccountSubTypes => GetTable<AccountSubType>();
 		public ITable<Account> Accounts => GetTable<Account>();
 		public ITable<ClearedStatus> ClearedStatuses => GetTable<ClearedStatus>();
-		public ITable<Stock> Stocks => GetTable<Stock>();
-		public ITable<StockValue> StockValues => GetTable<StockValue>();
+		public ITable<Security> Securities => GetTable<Security>();
+		public ITable<SecurityValue> SecurityValues => GetTable<SecurityValue>();
 		public ITable<Transaction> Transactions => GetTable<Transaction>();
 		public ITable<TransactionItem> TransactionItems => GetTable<TransactionItem>();
 		public ITable<VersionHistory> VersionHistories => GetTable<VersionHistory>();

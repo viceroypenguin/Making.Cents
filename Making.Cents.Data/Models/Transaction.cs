@@ -31,7 +31,7 @@ namespace Making.Cents.Data.Models
 		[PrimaryKey(2), DataType(LinqToDB.DataType.Int32), Identity] public TransactionItemId TransactionItemId { get; set; }
 
 		[Column, NotNull] public AccountId AccountId { get; set; }
-		[Column, NotNull] public StockId StockId { get; set; }
+		[Column, NotNull] public SecurityId StockId { get; set; }
 		[Column, NotNull] public decimal Shares { get; set; }
 		[Column, NotNull] public decimal Amount { get; set; }
 		[ExpressionMethod(nameof(PerShareExpr), IsColumn = true)] public decimal PerShare { get; set; }

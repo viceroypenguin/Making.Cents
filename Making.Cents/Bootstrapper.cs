@@ -40,7 +40,9 @@ namespace Making.Cents
 			var logger = container.Resolve<ILogger<Bootstrapper>>();
 			logger.LogDebug("Logging initialized");
 
-			Task.Run(() => Qif.Qif.ReadFile(@"C:\Users\stuar\OneDrive\Documents\Finances\my money.qif", container.Resolve<ILogger<Qif.Qif>>())).Wait();
+			var qif = Task.Run(() => Qif.Qif.ReadFile(@"C:\Users\stuar\OneDrive\Documents\Finances\my money.qif", container.Resolve<ILogger<Qif.Qif>>()))
+				.GetAwaiter()
+				.GetResult();
 
 			RegisterDataSources(container);
 			RegisterServices(container);
@@ -69,7 +71,7 @@ namespace Making.Cents
 
 			Log.Logger = new LoggerConfiguration()
 				.Enrich.FromLogContext()
-				.MinimumLevel.Verbose()
+				.MinimumLevel.Debug()
 				.WriteTo.Console(
 					outputTemplate: "{Timestamp:HH:mm:ss.fff} [{Level:u3}] {Message:lj} <s:{SourceContext}>{NewLine}{Exception}",
 					theme: AnsiConsoleTheme.Code)

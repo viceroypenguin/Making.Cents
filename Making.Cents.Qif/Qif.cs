@@ -22,10 +22,10 @@ namespace Making.Cents.Qif
 		#region Initialization
 		private Qif() { }
 
-		public IReadOnlyList<Stock> Stocks { get; private set; } = null!;
+		public IReadOnlyList<Security> Stocks { get; private set; } = null!;
 		public IReadOnlyList<Account> Accounts { get; private set; } = null!;
 		public IReadOnlyList<Transaction> Transactions { get; private set; } = null!;
-		public IReadOnlyList<Stock> StockValues { get; private set; } = null!;
+		public IReadOnlyList<Security> StockValues { get; private set; } = null!;
 
 		public static async Task<Qif> ReadFile(string fileName, ILogger<Qif>? logger = null)
 		{
@@ -57,8 +57,8 @@ namespace Making.Cents.Qif
 			private int _lineNumber = 0;
 
 			private readonly Dictionary<string, Account> _accounts = new Dictionary<string, Account>(StringComparer.OrdinalIgnoreCase);
-			private readonly Dictionary<string, Stock> _stocks = new Dictionary<string, Stock>(StringComparer.OrdinalIgnoreCase);
-			private readonly List<Stock> _prices = new List<Stock>();
+			private readonly Dictionary<string, Security> _stocks = new Dictionary<string, Security>(StringComparer.OrdinalIgnoreCase);
+			private readonly List<Security> _prices = new List<Security>();
 
 			private readonly List<Transaction> _transactions = new List<Transaction>();
 			private readonly Dictionary<(Account fromAccount, Account toAccount, DateTime date, decimal amount), Transaction> _transfers =
@@ -235,7 +235,7 @@ namespace Making.Cents.Qif
 							new TransactionItem
 							{
 								Account = GetCurrentAccount(),
-								StockId = (StockId)0,
+								StockId = (SecurityId)0,
 								ClearedStatus = cleared,
 								Memo = memo,
 							},
@@ -293,7 +293,7 @@ namespace Making.Cents.Qif
 									new TransactionItem
 									{
 										Account = _accounts["Fees"],
-										StockId = (StockId)0,
+										StockId = (SecurityId)0,
 										Amount = amt,
 										Shares = amt,
 									});
@@ -329,7 +329,7 @@ namespace Making.Cents.Qif
 									new TransactionItem
 									{
 										Account = _accounts["Fees"],
-										StockId = (StockId)0,
+										StockId = (SecurityId)0,
 										Amount = amt,
 										Shares = amt,
 									});
@@ -388,7 +388,7 @@ namespace Making.Cents.Qif
 								new TransactionItem
 								{
 									Account = _accounts["Investment Income:Dividends"],
-									StockId = (StockId)0,
+									StockId = (SecurityId)0,
 									Amount = -cashAmount,
 									Shares = -cashAmount,
 								});
@@ -420,7 +420,7 @@ namespace Making.Cents.Qif
 								new TransactionItem
 								{
 									Account = _accounts["Investment Income:Dividends"],
-									StockId = (StockId)0,
+									StockId = (SecurityId)0,
 									Amount = -cashAmount,
 									Shares = -cashAmount,
 								});
@@ -519,7 +519,7 @@ namespace Making.Cents.Qif
 								new TransactionItem
 								{
 									Account = _accounts["Investment Income:Interest"],
-									StockId = (StockId)0,
+									StockId = (SecurityId)0,
 									Amount = -cashAmount,
 									Shares = -cashAmount,
 								});
@@ -571,7 +571,7 @@ namespace Making.Cents.Qif
 							new TransactionItem
 							{
 								Account = GetCurrentAccount(),
-								StockId = (StockId)0,
+								StockId = (SecurityId)0,
 								Amount = amount,
 								Shares = amount,
 								ClearedStatus = cleared,
@@ -627,7 +627,7 @@ namespace Making.Cents.Qif
 						.Select(s => new TransactionItem
 						{
 							Account = _accounts[s.account[0] == '[' ? s.account[1..^1] : s.account],
-							StockId = (StockId)0,
+							StockId = (SecurityId)0,
 							Amount = s.amount,
 							Shares = s.amount,
 							Memo = s.memo,
@@ -686,7 +686,7 @@ namespace Making.Cents.Qif
 			{
 				var data = _record[1].Split(',');
 				_prices.Add(
-					new Stock
+					new Security
 					{
 						Ticker = data[0].Trim('"'),
 						CurrentValueDate = ParseDate(data[2].Trim('"')),
@@ -707,7 +707,7 @@ namespace Making.Cents.Qif
 					var dict = _record.ToDictionary(x => x[0], x => x[1..]);
 					_stocks.GetOrAdd(
 						dict['N'],
-						_ => new Stock
+						_ => new Security
 						{
 							Name = dict['N'],
 							Ticker = dict.GetOrDefault('S', "____"),

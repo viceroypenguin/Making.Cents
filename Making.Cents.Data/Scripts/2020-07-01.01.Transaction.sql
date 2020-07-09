@@ -1,26 +1,26 @@
-﻿create table Stock
+﻿create table Security
 (
-	StockId int identity(0,1) not null
-		constraint [PK_Stock] primary key,
+	SecurityId int identity(0,1) not null
+		constraint [PK_Security] primary key,
 	Ticker varchar(10) not null,
 	Name varchar(200) not null,
 );
 
-insert Stock values('CASH', 'CASH');
+insert Security values('CASH', 'CASH');
 
-create table StockValue
+create table SecurityValue
 (
-	StockId int not null
-		constraint [FK_StockValue_Stock]
-		foreign key references Stock,
+	SecurityId int not null
+		constraint [FK_SecurityValue_Security]
+		foreign key references Security,
 	[Date] date not null,
 	[Value] money not null,
 
-	constraint [PK_StockValue]
-		primary key (StockId, [Date]),
+	constraint [PK_SecurityValue]
+		primary key (SecurityId, [Date]),
 );
 
-insert StockValue values (0, '2020-01-01', 1.00);
+insert SecurityValue values (0, '2020-01-01', 1.00);
 
 create table [Transaction]
 (
@@ -48,9 +48,9 @@ create table TransactionItem
 	AccountId int not null
 		constraint [FK_TransactionItem_Account]
 		foreign key references Account,
-	StockId int not null
-		constraint [FK_TransactionItem_Stock]
-		foreign key references Stock,
+	SecurityId int not null
+		constraint [FK_TransactionItem_Security]
+		foreign key references Security,
 	Shares money not null,
 	Amount money not null,
 	PerShare as Amount / Shares persisted not null,
@@ -64,12 +64,12 @@ create table TransactionItem
 		primary key (TransactionId, TransactionItemId),
 
 	constraint [CK_TransactionItem_Cash_PerShare]
-		check (StockId != 0 or PerShare = 1),
+		check (SecurityId != 0 or PerShare = 1),
 );
 
 create index [IX_TransactionItem_AccountId]
 on TransactionItem(AccountId)
-include (TransactionId, TransactionItemId, StockId, Shares, Amount, PerShare, ClearedStatus, Memo);
+include (TransactionId, TransactionItemId, SecurityId, Shares, Amount, PerShare, ClearedStatusId, Memo);
 go
 
 create or alter view TransactionBalance

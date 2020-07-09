@@ -5,9 +5,9 @@ using Making.Cents.Common.Ids;
 
 namespace Making.Cents.Common.Models
 {
-	public class Stock
+	public class Security
 	{
-		public StockId StockId { get; set; }
+		public SecurityId StockId { get; set; }
 		public string Ticker { get; set; } = string.Empty;
 		public string Name { get; set; } = string.Empty;
 

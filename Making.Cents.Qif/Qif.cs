@@ -22,6 +22,11 @@ namespace Making.Cents.Qif
 		#region Initialization
 		private Qif() { }
 
+		public IReadOnlyList<Stock> Stocks { get; private set; } = null!;
+		public IReadOnlyList<Account> Accounts { get; private set; } = null!;
+		public IReadOnlyList<Transaction> Transactions { get; private set; } = null!;
+		public IReadOnlyList<Stock> StockValues { get; private set; } = null!;
+
 		public static async Task<Qif> ReadFile(string fileName, ILogger<Qif>? logger = null)
 		{
 			using (var stream = new StreamReader(fileName))
@@ -53,6 +58,7 @@ namespace Making.Cents.Qif
 
 			private readonly Dictionary<string, Account> _accounts = new Dictionary<string, Account>(StringComparer.OrdinalIgnoreCase);
 			private readonly Dictionary<string, Stock> _stocks = new Dictionary<string, Stock>(StringComparer.OrdinalIgnoreCase);
+			private readonly List<Stock> _prices = new List<Stock>();
 
 			private readonly List<Transaction> _transactions = new List<Transaction>();
 			private readonly Dictionary<(Account fromAccount, Account toAccount, DateTime date, decimal amount), Transaction> _transfers =
@@ -79,6 +85,9 @@ namespace Making.Cents.Qif
 					if (_record == null)
 						break;
 
+					if (!_record.Any())
+						break;
+
 					switch (_record[0])
 					{
 						case "!Account": await ParseAccounts(); break;
@@ -99,6 +108,10 @@ namespace Making.Cents.Qif
 					}
 				}
 
+				_qif.Stocks = _stocks.Values.ToArray();
+				_qif.Accounts = _accounts.Values.ToArray();
+				_qif.Transactions = _transactions;
+				_qif.StockValues = _prices;
 				return _qif;
 			}
 
@@ -199,7 +212,7 @@ namespace Making.Cents.Qif
 						return;
 
 					var dict = _record.TakeWhile(s => s[0] != 'S').ToDictionary(x => x[0], x => x[1..]);
-					var date = DateTime.ParseExact(dict['D'], new[] { @"M\/dd\'yy", @"M\/ d\'yy", @"M\/dd\' y", @"M\/ d\' y", }, null, System.Globalization.DateTimeStyles.None);
+					var date = ParseDate(dict['D']);
 
 					var cashAmount = Convert.ToDecimal(dict.GetOrDefault('T', "0.00"));
 
@@ -535,7 +548,7 @@ namespace Making.Cents.Qif
 						return;
 
 					var dict = _record.TakeWhile(s => s[0] != 'S').ToDictionary(x => x[0], x => x[1..]);
-					var date = DateTime.ParseExact(dict['D'], new[] { @"M\/dd\'yy", @"M\/ d\'yy", @"M\/dd\' y", @"M\/ d\' y", }, null, System.Globalization.DateTimeStyles.None);
+					var date = ParseDate(dict['D']);
 
 					var amount = Convert.ToDecimal(dict['T']);
 
@@ -589,6 +602,23 @@ namespace Making.Cents.Qif
 					await GetNextRecord();
 				}
 			}
+
+			private static DateTime ParseDate(string dateStr) =>
+				DateTime.ParseExact(
+					dateStr,
+					new[]
+					{
+						@"M\/dd\'yy",
+						@"M\/ d\'yy",
+						@"M\/dd\' y",
+						@"M\/ d\' y",
+						@" M\/dd\'yy",
+						@" M\/ d\'yy",
+						@" M\/dd\' y",
+						@" M\/ d\' y",
+					},
+					null,
+					System.Globalization.DateTimeStyles.None);
 
 			private void HandleCashTransaction(DateTime date, decimal amount, ClearedStatus cleared, Transaction transaction, (string account, decimal amount, string? memo)[] splits)
 			{
@@ -652,9 +682,18 @@ namespace Making.Cents.Qif
 				throw new NotImplementedException();
 			}
 
-			private Task ParseSecurityPrice()
+			private async Task ParseSecurityPrice()
 			{
-				throw new NotImplementedException();
+				var data = _record[1].Split(',');
+				_prices.Add(
+					new Stock
+					{
+						Ticker = data[0].Trim('"'),
+						CurrentValueDate = ParseDate(data[2].Trim('"')),
+						CurrentValue = Convert.ToDecimal(data[1]),
+					});
+
+				await GetNextRecord();
 			}
 
 			private async Task ParseSecurity()

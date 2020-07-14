@@ -55,6 +55,7 @@ namespace Making.Cents.Qif
 
 			private List<string> _record = null!;
 			private int _lineNumber = 0;
+			private int _recordNumber = 0;
 
 			private readonly Dictionary<string, Account> _accounts = new Dictionary<string, Account>(StringComparer.OrdinalIgnoreCase);
 			private readonly Dictionary<string, Security> _stocks = new Dictionary<string, Security>(StringComparer.OrdinalIgnoreCase);
@@ -127,7 +128,10 @@ namespace Making.Cents.Qif
 						return;
 
 					if (line == "^")
+					{
+						_logger?.LogDebug("Record #{recordNumber} parsed.", ++_recordNumber);
 						return;
+					}
 
 					if (line == "!Option:AutoSwitch")
 						continue;

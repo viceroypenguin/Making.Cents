@@ -65,21 +65,21 @@ namespace Making.Cents.Data
 			AccountTypes
 				.Merge().Using(Enums.GetMembers<Common.Enums.AccountType>())
 				.On((dst, src) => dst.AccountTypeId == src.Value)
-				.InsertWhenNotMatched(src => new AccountType { AccountTypeId = src.Value, Name = src.Name, })
+				.InsertWhenNotMatched(src => new EnumTable_AccountType { AccountTypeId = src.Value, Name = src.Name, })
 				.DeleteWhenNotMatchedBySource()
 				.Merge();
 
 			AccountSubTypes
 				.Merge().Using(Enums.GetMembers<Common.Enums.AccountSubType>())
 				.On((dst, src) => dst.AccountSubTypeId == src.Value)
-				.InsertWhenNotMatched(src => new AccountSubType { AccountSubTypeId = src.Value, Name = src.Name, })
+				.InsertWhenNotMatched(src => new EnumTable_AccountSubType { AccountSubTypeId = src.Value, Name = src.Name, })
 				.DeleteWhenNotMatchedBySource()
 				.Merge();
 
-			ClearedStatuses
+			ClearedStatus
 				.Merge().Using(Enums.GetMembers<Common.Enums.ClearedStatus>())
 				.On((dst, src) => dst.ClearedStatusId == src.Value)
-				.InsertWhenNotMatched(src => new ClearedStatus { ClearedStatusId = src.Value, Name = src.Name, })
+				.InsertWhenNotMatched(src => new EnumTable_ClearedStatus { ClearedStatusId = src.Value, Name = src.Name, })
 				.DeleteWhenNotMatchedBySource()
 				.Merge();
 		}

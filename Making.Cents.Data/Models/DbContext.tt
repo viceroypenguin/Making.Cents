@@ -1,0 +1,103 @@
+<#@ template language="C#" debug="True" hostSpecific="True"                           #>
+<#@ output extension=".generated.cs"                                                  #>
+<#@ import namespace="System.IO"													  #>
+<#@ import namespace="System.Text.RegularExpressions"								  #>
+<#@ include file="$(LinqToDBT4SqlServerTemplatesDirectory)LinqToDB.SqlServer.Tools.ttinclude" #>
+<#@ include file="$(LinqToDBT4SqlServerTemplatesDirectory)PluralizationService.ttinclude"     #>
+<#
+	NamespaceName = "Making.Cents.Data.Models";
+	DataContextName = "DbContext";
+
+	Model.Usings.Add("Making.Cents.Common.Ids");
+	Model.Usings.Add("Making.Cents.Data.Converters");
+
+	GenerateConstructors = false;
+	GenerateDatabaseInfo = false;
+	GenerateFindExtensions = false;
+
+	ConvertColumnMemberType = c => 
+		c.ColumnName.EndsWith("Id")
+			? c.ColumnName
+			: c.MemberType;
+
+	var server = @"(localdb)\mssqllocaldb";
+	var db = "making_cents_" + Guid.NewGuid().ToString().Replace("-", "");
+
+	try
+	{
+		CreateDatabase(server, db);
+
+		LoadMigrationScripts(server, db);
+		LoadSqlServerMetadata(server, db);
+
+		GetTable("AccountType").TypeName = "EnumTable_AccountType";
+		GetTable("AccountSubType").TypeName = "EnumTable_AccountSubType";
+		GetTable("ClearedStatus").TypeName = "EnumTable_ClearedStatus";
+
+		foreach (var t in Tables.Values)
+			foreach (var c in t.Columns.Values.Where(c => c.ColumnName.EndsWith("Id")))
+				c.Attributes.Add(new Attribute($"ValueConverter(ConverterType = typeof({c.ColumnName}Converter))"));
+
+		var oldBeforeGenerateModel = BeforeGenerateModel;
+		BeforeGenerateModel = () =>
+		{
+			oldBeforeGenerateModel();
+
+			var contextNamespace = new Namespace()
+			{
+				Name = "Making.Cents.Data",
+				Usings = { "Models", },
+				Types = { Model.Namespace.Types[0], },
+			};
+
+			Model.Namespace.Types.RemoveAt(0);
+			Model.Namespaces.Insert(0, contextNamespace);
+		};
+
+		GenerateModel();
+	}
+	finally
+	{
+		DropDatabase(server, db);
+	}
+#>
+
+<#+
+	void CreateDatabase(string server, string database)
+	{
+		using (var conn = GetSqlServerConnection(server, "master"))
+			conn.Execute($"create database {database};");
+	}
+
+	void DropDatabase(string server, string database)
+	{
+		using (var conn = GetSqlServerConnection(server, "master"))
+			conn.Execute($@"
+if exists (select * from sys.databases where name = '{database}')
+begin
+ alter database {database} set single_user with rollback immediate;
+ drop database {database};
+end");
+	}
+
+	void LoadMigrationScripts(string server, string database)
+	{
+		Regex sqlBlocks = new Regex(@"^go\r?$", RegexOptions.IgnoreCase | RegexOptions.Multiline);
+
+		using (var conn = GetSqlServerConnection(server, database))
+			foreach (var f in Directory.GetFiles(
+				Path.Combine(Path.GetDirectoryName(Host.TemplateFile), @"..\Scripts")))
+			{
+				try
+				{
+					var text = File.ReadAllText(f);
+					foreach (var b in sqlBlocks.Split(text).Where(s => !string.IsNullOrWhiteSpace(s)))
+						conn.Execute(b);
+				}
+				catch (Exception e)
+				{
+					throw new InvalidOperationException($"Unable to execute file '{Path.GetFileName(f)}'.", e);
+				}
+			}
+	}
+#>

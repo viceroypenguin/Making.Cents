@@ -72,7 +72,7 @@ namespace Making.Cents.Data.Services
 					from ti in c.TransactionItems.Where(ti => ti.TransactionId == t.TransactionId)
 					from a in c.Accounts.Where(a => a.AccountId == ti.AccountId)
 					from sv in c.SecurityValues
-						.Where(sv => sv.SecurityId == ti.StockId)
+						.Where(sv => sv.SecurityId == ti.SecurityId)
 						.Where(sv => sv.Date < date)
 						.OrderByDescending(sv => sv.Date)
 						.Take(1)

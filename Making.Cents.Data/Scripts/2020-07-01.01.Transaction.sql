@@ -20,7 +20,7 @@ create table SecurityValue
 		primary key (SecurityId, [Date]),
 );
 
-insert SecurityValue values (0, '2020-01-01', 1.00);
+insert SecurityValue values (0, '2000-01-01', 1.00);
 
 create table [Transaction]
 (
@@ -53,7 +53,7 @@ create table TransactionItem
 		foreign key references Security,
 	Shares money not null,
 	Amount money not null,
-	PerShare as Amount / Shares persisted not null,
+	PerShare as isnull(Amount / nullif(Shares, 0), 0) persisted not null,
 
 	ClearedStatusId int not null
 		constraint [FK_TransactionItem_ClearedStatus]

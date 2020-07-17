@@ -20,6 +20,8 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
 using System.Threading.Tasks;
+using LinqToDB.Data;
+using LinqToDB;
 
 namespace Making.Cents
 {
@@ -40,10 +42,6 @@ namespace Making.Cents
 			var logger = container.Resolve<ILogger<Bootstrapper>>();
 			logger.LogDebug("Logging initialized");
 
-			var qif = Task.Run(() => Qif.Qif.ReadFile(@"C:\Users\stuar\OneDrive\Documents\Finances\my money.qif", container.Resolve<ILogger<Qif.Qif>>()))
-				.GetAwaiter()
-				.GetResult();
-
 			RegisterDataSources(container);
 			RegisterServices(container);
 			RegisterViewModels(container);
@@ -51,6 +49,79 @@ namespace Making.Cents
 
 			InitializeDatabase(container);
 			logger.LogDebug("Database initialized");
+
+#if false
+			if (false)
+			{
+				var qif = Task.Run(() => Qif.Qif.ReadFile(@"C:\Users\stuar\OneDrive\Documents\Finances\my money.qif", container.Resolve<ILogger<Qif.Qif>>()))
+					.GetAwaiter()
+					.GetResult();
+				using (var context = container.Resolve<DbContext>())
+				{
+					foreach (var security in qif.Stocks)
+					{
+						security.StockId =
+							context.Securities
+								.InsertWithOutput(new Data.Models.Security
+								{
+									Name = security.Name,
+									Ticker = security.Ticker,
+								})
+								.SecurityId;
+					}
+
+					var tickerMap = qif.Stocks
+						.ToDictionary(x => x.Ticker, x => x.StockId);
+
+					foreach (var account in qif.Accounts)
+					{
+						account.AccountId =
+							context.Accounts
+								.InsertWithOutput(new Data.Models.Account
+								{
+									Name = account.Name,
+									AccountTypeId = account.AccountType,
+									AccountSubTypeId = account.AccountSubType,
+								})
+								.AccountId;
+					}
+
+					foreach (var transaction in qif.Transactions)
+					{
+						transaction.TransactionId =
+							context.Transactions
+								.InsertWithOutput(new Data.Models.Transaction
+								{
+									Date = transaction.Date,
+									Description = transaction.Description,
+									Memo = transaction.Memo,
+								})
+								.TransactionId;
+					}
+
+					context.BulkCopy(qif.Transactions
+						.SelectMany(t => t.TransactionItems
+							.Select(ti => new Data.Models.TransactionItem
+							{
+								TransactionId = t.TransactionId,
+								AccountId = ti.Account!.AccountId,
+								SecurityId = ti.Stock?.StockId ?? ti.StockId,
+								Amount = ti.Amount,
+								Shares = ti.Shares,
+								Memo = ti.Memo,
+								ClearedStatusId = ti.ClearedStatus,
+							})));
+
+					context.BulkCopy(qif.StockValues
+						.Select(sv => new Data.Models.SecurityValue
+						{
+							SecurityId = tickerMap[sv.Ticker],
+							Date = sv.CurrentValueDate,
+							Value = sv.CurrentValue,
+						}));
+				}
+			}
+#endif
 
 			var vm = container.Resolve<ShellViewModel>();
 

@@ -1,27 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Windows;
-using Acklann.Plaid;
+using System.Threading.Tasks;
 using DryIoc;
 using EnumsNET;
-using ImTools;
+using Going.Plaid;
+using LinqToDB;
+using LinqToDB.Data;
+using Making.Cents.AccountsModule.ViewModels;
 using Making.Cents.Data;
 using Making.Cents.Data.Services;
-using Making.Cents.AccountsModule.ViewModels;
-using Making.Cents.AccountsModule.Views;
 using Making.Cents.ViewModels;
 using Making.Cents.Views;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
-using System.Threading.Tasks;
-using LinqToDB.Data;
-using LinqToDB;
 
 namespace Making.Cents
 {
@@ -50,8 +45,8 @@ namespace Making.Cents
 			InitializeDatabase(container);
 			logger.LogDebug("Database initialized");
 
-#if false
-			if (false)
+#if true
+			if (true)
 			{
 				var qif = Task.Run(() => Qif.Qif.ReadFile(@"C:\Users\stuar\OneDrive\Documents\Finances\my money.qif", container.Resolve<ILogger<Qif.Qif>>()))
 					.GetAwaiter()
@@ -183,19 +178,17 @@ namespace Making.Cents
 
 			var configuration = container.Resolve<IConfigurationRoot>().GetSection("Plaid");
 
-			var environment = Enums.Parse<Acklann.Plaid.Environment>(configuration["environment"]);
+			var environment = Enums.Parse<Going.Plaid.Environment>(configuration["environment"]);
 			var clientId = configuration["clientId"];
 			var secret = configuration["secret"];
+			container.RegisterInstance(
+				new PlaidClient(
+					environment: environment,
+					clientId: clientId,
+					secret: secret));
 
 			foreach (var c in configuration.GetSection("accessTokens").GetChildren())
 			{
-				container.RegisterInstance(
-					new PlaidClient(
-						environment: environment,
-						clientId: clientId,
-						secret: secret,
-						accessToken: c.Value),
-					serviceKey: c.Key);
 			}
 		}
 

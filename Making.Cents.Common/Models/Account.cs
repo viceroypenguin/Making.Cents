@@ -14,7 +14,7 @@ namespace Making.Cents.Common.Models
 		public AccountSubType AccountSubType { get; set; }
 
 		public string? PlaidSource { get; set; }
-		public Acklann.Plaid.Entity.Account? PlaidAccountData { get; set; }
+		public Going.Plaid.Entity.Account? PlaidAccountData { get; set; }
 
 		public decimal Balance { get; set; }
 	}

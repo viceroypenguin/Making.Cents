@@ -9,8 +9,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="DevExpressMvvm" Version="19.2.3" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.5" />
+		<PackageReference Include="DevExpressMvvm" Version="20.1.6" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.6" />
 	</ItemGroup>
 
 	<ItemGroup>

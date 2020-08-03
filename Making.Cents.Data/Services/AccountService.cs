@@ -1,17 +1,16 @@
-﻿using Acklann.Plaid;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using Making.Cents.Data;
 using System.Linq;
-using LinqToDB;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
+using Dawn;
+using Going.Plaid;
+using LinqToDB;
 using Making.Cents.Common.Enums;
 using Making.Cents.Common.Models;
-using Making.Cents.Common.Support;
-using Dawn;
-using Making.Cents.Common.Ids;
+using Newtonsoft.Json;
+
+using PlaidAccountType = Going.Plaid.Entity.AccountType;
+using PlaidAccountSubType = Going.Plaid.Entity.AccountSubType;
 
 namespace Making.Cents.Data.Services
 {
@@ -56,7 +55,7 @@ namespace Making.Cents.Data.Services
 							PlaidSource = a.PlaidSource,
 							PlaidAccountData = string.IsNullOrWhiteSpace(a.PlaidAccountData)
 								? null
-								: JsonConvert.DeserializeObject<Acklann.Plaid.Entity.Account>(a.PlaidAccountData),
+								: JsonConvert.DeserializeObject<Going.Plaid.Entity.Account>(a.PlaidAccountData),
 						})
 						.ToListAsync();
 				}
@@ -100,20 +99,20 @@ namespace Making.Cents.Data.Services
 			var dbAccounts = await GetDbAccounts();
 			var plaidAccounts = await _plaidClients[source]
 				.FetchAccountAsync(
-					new Acklann.Plaid.Balance.GetAccountRequest());
+					new Going.Plaid.Balance.GetAccountRequest());
 
 			if (!plaidAccounts.IsSuccessStatusCode)
-				throw plaidAccounts.Exception;
+				throw plaidAccounts.Exception!;
 
 			var map = _accountsByPlaidId
 				??= dbAccounts
 					.Where(a => a.PlaidAccountData != null)
-					.ToDictionary(a => a.PlaidAccountData!.Id);
+					.ToDictionary(a => a.PlaidAccountData!.AccountId);
 
 			return plaidAccounts
 				.Accounts
 				.Select(a =>
-					map.GetValueOrDefault(a.Id)
+					map.GetValueOrDefault(a.AccountId)
 					?? new Account
 					{
 						Name = a.Name,
@@ -127,75 +126,76 @@ namespace Making.Cents.Data.Services
 				.ToArray();
 		}
 
-		private static AccountType GetAccountType(string type) =>
+		private static AccountType GetAccountType(PlaidAccountType type) =>
 			type switch
 			{
-				"investment" => AccountType.Asset,
-				"depository" => AccountType.Asset,
-				"credit" => AccountType.Liability,
-				"loan" => AccountType.Liability,
+				PlaidAccountType.Investment => AccountType.Asset,
+				PlaidAccountType.Brokerage => AccountType.Asset,
+				PlaidAccountType.Depository => AccountType.Asset,
+				PlaidAccountType.Credit => AccountType.Liability,
+				PlaidAccountType.Loan => AccountType.Liability,
+				PlaidAccountType.Mortgage => AccountType.Liability,
 				_ => AccountType.Asset,
 			};
 
-		private static AccountSubType GetAccountSubType(string type, string subType) =>
+		private static AccountSubType GetAccountSubType(PlaidAccountType type, PlaidAccountSubType subType) =>
 			(type, subType) switch
 			{
-				(_, "401a") => AccountSubType.Retirement,
-				(_, "401k") => AccountSubType.Retirement,
-				(_, "403b") => AccountSubType.Retirement,
-				(_, "457b") => AccountSubType.Retirement,
-				(_, "529") => AccountSubType.Retirement,
-				(_, "brokerage") => AccountSubType.Retirement,
-				(_, "cash isa") => AccountSubType.Retirement,
-				(_, "education savings account") => AccountSubType.Retirement,
-				(_, "gic") => AccountSubType.Retirement,
-				(_, "health reimbursement arrangement") => AccountSubType.Hsa,
-				(_, "hsa") => AccountSubType.Hsa,
-				(_, "isa") => AccountSubType.Retirement,
-				(_, "ira") => AccountSubType.Retirement,
-				(_, "lif") => AccountSubType.Retirement,
-				(_, "lira") => AccountSubType.Retirement,
-				(_, "lrif") => AccountSubType.Retirement,
-				(_, "lrsp") => AccountSubType.Retirement,
-				(_, "non-taxable brokerage account") => AccountSubType.Retirement,
-				(_, "prif") => AccountSubType.Retirement,
-				(_, "rdsp") => AccountSubType.Retirement,
-				(_, "resp") => AccountSubType.Retirement,
-				(_, "rlif") => AccountSubType.Retirement,
-				(_, "rrif") => AccountSubType.Retirement,
-				(_, "pension") => AccountSubType.Retirement,
-				(_, "profit sharing plan") => AccountSubType.Retirement,
-				(_, "retirement") => AccountSubType.Retirement,
-				(_, "roth") => AccountSubType.Retirement,
-				(_, "roth 401k") => AccountSubType.Retirement,
-				(_, "rrsp") => AccountSubType.Retirement,
-				(_, "sep ira") => AccountSubType.Retirement,
-				(_, "simple ira") => AccountSubType.Retirement,
-				(_, "sipp") => AccountSubType.Retirement,
-				(_, "stock plan") => AccountSubType.Retirement,
-				(_, "thrift savings plan") => AccountSubType.Retirement,
-				(_, "tfsa") => AccountSubType.Retirement,
-				(_, "trust") => AccountSubType.Brokerage,
-				(_, "ugma") => AccountSubType.Brokerage,
-				(_, "utma") => AccountSubType.Brokerage,
-				(_, "variable annuity") => AccountSubType.Retirement,
-				("investment", _) => AccountSubType.Brokerage,
+				(_, PlaidAccountSubType._401a) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType._401k) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType._403b) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType._457b) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType._529) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType.Brokerage) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType.CashIsa) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType.EducationSavingsAaccount) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType.Gic) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType.HealthReimbursementArrangement) => AccountSubType.Hsa,
+				(_, PlaidAccountSubType.Hsa) => AccountSubType.Hsa,
+				(_, PlaidAccountSubType.Isa) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType.Ira) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType.Lif) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType.Lira) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType.Lrif) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType.Lrsp) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType.NonTaxableBrokerageAccount) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType.Prif) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType.Rdsp) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType.Resp) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType.Rlif) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType.Rrif) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType.Pension) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType.ProfitSharingPlan) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType.Retirement) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType.Roth) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType.Roth401k) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType.Rrsp) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType.SepIra) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType.SimpleIra) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType.Sipp) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType.StockPlan) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType.ThriftSavingsPlan) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType.Tfsa) => AccountSubType.Retirement,
+				(_, PlaidAccountSubType.Trust) => AccountSubType.Brokerage,
+				(_, PlaidAccountSubType.Ugma) => AccountSubType.Brokerage,
+				(_, PlaidAccountSubType.Utma) => AccountSubType.Brokerage,
+				(_, PlaidAccountSubType.VariableAnnuity) => AccountSubType.Retirement,
+				(PlaidAccountType.Investment, _) => AccountSubType.Brokerage,
 
-				("depository", _) => AccountSubType.Checking,
-				("credit", _) => AccountSubType.CreditCard,
+				(PlaidAccountType.Depository, _) => AccountSubType.Checking,
+				(PlaidAccountType.Credit, _) => AccountSubType.CreditCard,
 
-				(_, "auto") => AccountSubType.Loan,
-				(_, "commercial") => AccountSubType.Loan,
-				(_, "construction") => AccountSubType.Loan,
-				(_, "consumer") => AccountSubType.Loan,
-				(_, "home") => AccountSubType.Mortgage,
-				(_, "home equity") => AccountSubType.Mortgage,
-				(_, "loan") => AccountSubType.Loan,
-				(_, "mortgage") => AccountSubType.Mortgage,
-				(_, "overdraft") => AccountSubType.Loan,
-				(_, "line of credit") => AccountSubType.Loan,
-				(_, "student") => AccountSubType.Loan,
-				("loan", _) => AccountSubType.OtherLiability,
+				(_, PlaidAccountSubType.Auto) => AccountSubType.Loan,
+				(_, PlaidAccountSubType.Commercial) => AccountSubType.Loan,
+				(_, PlaidAccountSubType.Construction) => AccountSubType.Loan,
+				(_, PlaidAccountSubType.Consumer) => AccountSubType.Loan,
+				(_, PlaidAccountSubType.HomeEquity) => AccountSubType.Mortgage,
+				(_, PlaidAccountSubType.Loan) => AccountSubType.Loan,
+				(_, PlaidAccountSubType.Mortgage) => AccountSubType.Mortgage,
+				(_, PlaidAccountSubType.Overdraft) => AccountSubType.Loan,
+				(_, PlaidAccountSubType.LineOfCredit) => AccountSubType.Loan,
+				(_, PlaidAccountSubType.Student) => AccountSubType.Loan,
+				(PlaidAccountType.Loan, _) => AccountSubType.OtherLiability,
 
 				_ => AccountSubType.OtherAsset,
 			};

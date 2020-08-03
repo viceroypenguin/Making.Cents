@@ -32,6 +32,7 @@ namespace Making.Cents.Common.Models
 
 		public ClearedStatus ClearedStatus { get; set; }
 		public string? Memo { get; set; }
+		public string? PlaidTransactionId { get; set; }
 
 		[DisallowNull] public Account? Account { get; set; }
 		[DisallowNull] public Security? Stock { get; set; }

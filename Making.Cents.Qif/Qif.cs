@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Reflection.Metadata;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Making.Cents.Common.Enums;
 using Making.Cents.Common.Extensions;
@@ -57,8 +54,18 @@ namespace Making.Cents.Qif
 			private int _lineNumber = 0;
 			private int _recordNumber = 0;
 
-			private readonly Dictionary<string, Account> _accounts = new Dictionary<string, Account>(StringComparer.OrdinalIgnoreCase);
-			private readonly Dictionary<string, Security> _stocks = new Dictionary<string, Security>(StringComparer.OrdinalIgnoreCase);
+			private readonly Dictionary<string, Account> _accounts =
+				new Dictionary<string, Account>(StringComparer.OrdinalIgnoreCase)
+				{
+					["Initial Equity"] = new Account { Name = "Initial Equity", AccountType = AccountType.Income, AccountSubType = AccountSubType.Income, },
+				};
+
+			private readonly Dictionary<string, Security> _stocks =
+				new Dictionary<string, Security>(StringComparer.OrdinalIgnoreCase)
+				{
+					["CASH"] = new Security { StockId = (SecurityId)0, Name = "CASH", },
+				};
+
 			private readonly List<Security> _prices = new List<Security>();
 
 			private readonly List<Transaction> _transactions = new List<Transaction>();
@@ -79,34 +86,43 @@ namespace Making.Cents.Qif
 
 			public async Task<Qif> Parse()
 			{
-				await GetNextRecord();
-
-				while (true)
+				try
 				{
-					if (_record == null)
-						break;
+					await GetNextRecord();
 
-					if (!_record.Any())
-						break;
-
-					switch (_record[0])
+					while (true)
 					{
-						case "!Account": await ParseAccounts(); break;
-						case "!Type:Bank": await ParseNonInvestmentTransactions(); break;
-						case "!Type:Cash": await ParseNonInvestmentTransactions(); break;
-						case "!Type:CCard": await ParseNonInvestmentTransactions(); break;
-						case "!Type:Invst": await ParseInvestmentTransactions(); break;
-						case "!Type:Oth A": await ParseNonInvestmentTransactions(); break;
-						case "!Type:Oth L": await ParseNonInvestmentTransactions(); break;
-						case "!Type:Cat": await ParseAccounts(); break;
-						case "!Type:Class": await ParseClassifications(); break;
-						case "!Type:Memorized": await ParseMemorizedTransactions(); break;
-						case "!Type:Prices": await ParseSecurityPrice(); break;
-						case "!Type:Security": await ParseSecurity(); break;
+						if (_record == null)
+							break;
 
-						default:
-							throw new InvalidOperationException($"Invalid .qif file. Unable to parse section type '{_record[0]}'");
+						if (!_record.Any())
+							break;
+
+						switch (_record[0])
+						{
+							case "!Account": await ParseAccounts(); break;
+							case "!Type:":  // wtf???
+							case "!Type:Bank": await ParseNonInvestmentTransactions(); break;
+							case "!Type:Cash": await ParseNonInvestmentTransactions(); break;
+							case "!Type:CCard": await ParseNonInvestmentTransactions(); break;
+							case "!Type:Invst": await ParseInvestmentTransactions(); break;
+							case "!Type:Oth A": await ParseNonInvestmentTransactions(); break;
+							case "!Type:Oth L": await ParseNonInvestmentTransactions(); break;
+							case "!Type:Cat": await ParseAccounts(); break;
+							case "!Type:Class": await ParseClassifications(); break;
+							case "!Type:Memorized": await ParseMemorizedTransactions(); break;
+							case "!Type:Prices": await ParseSecurityPrice(); break;
+							case "!Type:Security": await ParseSecurity(); break;
+
+							default:
+								throw new InvalidOperationException($"Invalid .qif file. Unable to parse section type '{_record[0]}'");
+						}
 					}
+				}
+				catch (Exception e)
+				{
+					_logger.LogError(e, "Parsing failed on line {line}", _lineNumber);
+					throw new InvalidOperationException($"Parsing failed on line {_lineNumber}", e);
 				}
 
 				_qif.Stocks = _stocks.Values.ToArray();
@@ -197,18 +213,22 @@ namespace Making.Cents.Qif
 					"Cash" => (AccountType.Asset, AccountSubType.Cash),
 					"Bank" => (AccountType.Asset, AccountSubType.Checking),
 					"Investment" => (AccountType.Asset, AccountSubType.Brokerage),
+					"Port" => (AccountType.Asset, AccountSubType.Brokerage), // will have to differentiate later
 					"Oth A" => (AccountType.Asset, AccountSubType.OtherAsset),
 					"401(k)/403(b)" => (AccountType.Asset, AccountSubType.Retirement),
 					"IRA" => (AccountType.Asset, AccountSubType.Retirement),
 					"Hsa" => (AccountType.Asset, AccountSubType.Hsa),
 					"CCard" => (AccountType.Liability, AccountSubType.CreditCard),
 					"Oth L" => (AccountType.Liability, AccountSubType.OtherLiability),
+					"" => (AccountType.Liability, AccountSubType.OtherLiability), // WTF?
 					_ => throw new InvalidOperationException($"Unknown account type: '{detail}'."),
 				};
 
 			private async Task ParseInvestmentTransactions()
 			{
 				_record.RemoveAt(0);
+
+				var inventory = new Dictionary<string, List<(decimal shares, decimal value)>>();
 
 				while (true)
 				{
@@ -274,19 +294,61 @@ namespace Making.Cents.Qif
 							break;
 						}
 
-						case "Buy":
+						case "Buy" when memo?.Contains("NAME CHANGED") ?? false:
 						{
-							transaction.TransactionItems[0].Amount = -cashAmount;
-							transaction.TransactionItems[0].Shares = -cashAmount;
+							var newStock = dict['Y'];
+							var shares = Convert.ToDecimal(dict['Q']);
+
+							await GetNextRecord();
+
+							dict = _record.TakeWhile(s => s[0] != 'S').ToDictionary(x => x[0], x => x[1..]);
+
+							var oldStock = dict['Y'];
+
+							if (inventory[oldStock].Sum(s => s.shares) != shares)
+								throw new InvalidOperationException("Number of shares doesn't match...");
+
+							cashAmount = inventory[oldStock].Sum(s => s.value * s.shares);
+
+							inventory[newStock] = inventory[oldStock];
+							inventory.Remove(oldStock);
 
 							transaction.TransactionItems.Add(
 								new TransactionItem
 								{
 									Account = GetCurrentAccount(),
-									Stock = _stocks[dict['Y']],
+									Stock = _stocks[newStock],
 									Amount = cashAmount,
-									Shares = Convert.ToDecimal(dict['Q']),
+									Shares = shares,
 								});
+							transaction.TransactionItems.Add(
+								new TransactionItem
+								{
+									Account = GetCurrentAccount(),
+									Stock = _stocks[oldStock],
+									Amount = -cashAmount,
+									Shares = -shares,
+								});
+
+							break;
+						}
+
+						case "Buy":
+						{
+							transaction.TransactionItems[0].Amount = -cashAmount;
+							transaction.TransactionItems[0].Shares = -cashAmount;
+
+							var ti = new TransactionItem
+							{
+								Account = GetCurrentAccount(),
+								Stock = _stocks[dict['Y']],
+								Amount = cashAmount,
+								Shares = Convert.ToDecimal(dict['Q']),
+							};
+							transaction.TransactionItems.Add(ti);
+
+							inventory.GetOrAdd(dict['Y'], new List<(decimal shares, decimal value)>())
+								.Add((ti.Shares, ti.PerShare));
 
 							if (dict.TryGetValue('O', out var commission))
 							{
@@ -315,19 +377,35 @@ namespace Making.Cents.Qif
 							transaction.TransactionItems[0].Amount = cashAmount;
 							transaction.TransactionItems[0].Shares = cashAmount;
 
+							var stock = dict['Y'];
+							var shares = Convert.ToDecimal(dict['Q']);
+							var baseValue = 0m;
+							var holdings = inventory[stock];
+
+							while (shares > holdings[0].shares)
+							{
+								baseValue += holdings[0].shares * holdings[0].value;
+								shares -= holdings[0].shares;
+								holdings.RemoveAt(0);
+							}
+
+							baseValue = Math.Round(baseValue + shares * holdings[0].value, 2);
+							holdings[0] = (holdings[0].shares - shares, holdings[0].value);
+
 							transaction.TransactionItems.Add(
 								new TransactionItem
 								{
 									Account = GetCurrentAccount(),
-									Stock = _stocks[dict['Y']],
-									Amount = -cashAmount,
+									Stock = _stocks[stock],
+									Amount = -baseValue,
 									Shares = -Convert.ToDecimal(dict['Q']),
 								});
 
+							var gains = cashAmount - baseValue;
 							if (dict.TryGetValue('O', out var commission))
 							{
 								var amt = Convert.ToDecimal(commission);
-								transaction.TransactionItems[1].Amount -= amt;
+								gains += amt;
 
 								transaction.TransactionItems.Add(
 									new TransactionItem
@@ -339,8 +417,14 @@ namespace Making.Cents.Qif
 									});
 							}
 
-							if (Math.Abs(transaction.TransactionItems[1].PerShare - Convert.ToDecimal(dict['I'])) > 0.01m)
-								throw new InvalidOperationException();
+							transaction.TransactionItems.Add(
+								new TransactionItem
+								{
+									Account = _accounts["Investment Income:Capital Gains"],
+									StockId = (SecurityId)0,
+									Amount = -gains,
+									Shares = -gains,
+								});
 
 							_transactions.Add(transaction);
 							break;
@@ -403,20 +487,24 @@ namespace Making.Cents.Qif
 						case "ReinvSh":
 						case "ReinvLg":
 						case "ReinvDiv":
+						{
 							if (string.IsNullOrWhiteSpace(transaction.Description))
 								transaction.Description = "Reinvest Dividend";
 
 							// stock repurchase
-							transaction.TransactionItems.Add(
-								new TransactionItem
-								{
-									Account = GetCurrentAccount(),
-									Stock = _stocks[dict['Y']],
-									Amount = cashAmount,
-									Shares = Convert.ToDecimal(dict['Q']),
-								});
+							var ti = new TransactionItem
+							{
+								Account = GetCurrentAccount(),
+								Stock = _stocks[dict['Y']],
+								Amount = cashAmount,
+								Shares = Convert.ToDecimal(dict['Q']),
+							};
+							transaction.TransactionItems.Add(ti);
 
-							if (Math.Abs(transaction.TransactionItems[1].PerShare - Convert.ToDecimal(dict['I'])) > 0.01m)
+							inventory.GetOrAdd(dict['Y'], new List<(decimal shares, decimal value)>())
+								.Add((ti.Shares, ti.PerShare));
+
+							if (Math.Abs(ti.PerShare - Convert.ToDecimal(dict['I'])) > 0.01m)
 								throw new InvalidOperationException();
 
 							// dividend income
@@ -431,12 +519,16 @@ namespace Making.Cents.Qif
 
 							_transactions.Add(transaction);
 							break;
+						}
 
 						case "ShrsOut":
 							break;
 
 						case "ShrsIn":
 						{
+							if (memo == "0 shares added to account")
+								break;
+
 							var stock = _stocks[dict['Y']];
 							var qty = Convert.ToDecimal(dict['Q']);
 
@@ -449,14 +541,29 @@ namespace Making.Cents.Qif
 									Amount = cashAmount,
 									Shares = qty,
 								});
-							transaction.TransactionItems.Add(
-								new TransactionItem
-								{
-									Account = _accounts[memo?.Replace("Xfr From: ", "") ?? "Initial Equity"],
-									Stock = stock,
-									Amount = -cashAmount,
-									Shares = -qty,
-								});
+
+							if (memo == null)
+								transaction.TransactionItems.Add(
+									new TransactionItem
+									{
+										Account = _accounts["Initial Equity"],
+										StockId = (SecurityId)0,
+										Amount = -cashAmount,
+										Shares = -cashAmount,
+									});
+							else
+								transaction.TransactionItems.Add(
+									new TransactionItem
+									{
+										Account = _accounts[memo.Replace("Xfr From: ", "")],
+										Stock = stock,
+										Amount = -cashAmount,
+										Shares = -qty,
+									});
+
+							var ti = transaction.TransactionItems[0];
+							inventory.GetOrAdd(dict['Y'], new List<(decimal shares, decimal value)>())
+								.Add((ti.Shares, ti.PerShare));
 
 							if (Math.Abs(transaction.TransactionItems[0].PerShare - Convert.ToDecimal(dict['I'])) > 0.01m)
 								throw new InvalidOperationException();
@@ -468,19 +575,30 @@ namespace Making.Cents.Qif
 						}
 
 						case "StkSplit":
+						{
 							if (string.IsNullOrWhiteSpace(transaction.Description))
 								transaction.Description = "Stock Split";
 
+							var newShares = Convert.ToDecimal(dict['Q']);
+							var stock = dict['Y'];
 							transaction.TransactionItems.Add(
 								new TransactionItem
 								{
 									Account = GetCurrentAccount(),
-									Stock = _stocks[dict['Y']],
-									Shares = Convert.ToDecimal(dict['Q']),
+									Stock = _stocks[stock],
+									Shares = newShares,
 								});
+
+							var holdings = inventory[stock];
+							var oldShares = holdings.Sum(s => s.shares);
+							var factor = (oldShares + newShares) / oldShares;
+							inventory[stock] = holdings
+								.Select(s => (s.shares * factor, s.value / factor))
+								.ToList();
 
 							_transactions.Add(transaction);
 							break;
+						}
 
 						case "Rename":
 						{
@@ -637,14 +755,22 @@ namespace Making.Cents.Qif
 							Memo = s.memo,
 						}));
 
-				var transferSplits = splits.Where(s => s.account[0] == '[').Select(s => s.account[1..^1]).ToArray();
+				var transferSplits = splits.Where(s => s.account[0] == '[').Select(s => (account: s.account[1..^1], amount: s.amount)).ToArray();
 				if (transferSplits.Any())
 				{
-					if (transferSplits.Any(s => s == GetCurrentAccount().Name))
-						throw new NotImplementedException();
+					if (transferSplits.Any(s => s.account == GetCurrentAccount().Name))
+					{
+						if (transaction.Description == "Opening Balance")
+						{
+							transaction.TransactionItems[^1].Account = _accounts["Initial Equity"];
+							_transactions.Add(transaction);
+						}
+						else
+							throw new NotImplementedException();
+					}
 
 					var existingTransfers = transferSplits
-						.Select(s => _transfers.GetOrDefault((_accounts[s], GetCurrentAccount(), date, Math.Abs(amount))))
+						.Select(s => _transfers.GetOrDefault((_accounts[s.account], GetCurrentAccount(), date, Math.Abs(s.amount))))
 						.Where(t => t != null)
 						.ToArray();
 					if (existingTransfers.Length == 1 && splits.Length == 1)

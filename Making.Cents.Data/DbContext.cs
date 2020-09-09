@@ -1,11 +1,7 @@
-﻿using LinqToDB;
-using LinqToDB.Data;
-using Making.Cents.Data.Models;
+﻿using LinqToDB.Data;
+using LinqToDB.DataProvider.SqlServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Making.Cents.Data
 {
@@ -15,8 +11,10 @@ namespace Making.Cents.Data
 
 		public DbContext(ILogger logger, IConfigurationRoot configurationRoot)
 			: base(
-				  connectionString: configurationRoot.GetConnectionString("Making.Cents"),
-				  providerName: "SqlServer")
+				connectionString: configurationRoot.GetConnectionString("Making.Cents"),
+				dataProvider: SqlServerTools.GetDataProvider(
+					SqlServerVersion.v2017,
+					SqlServerProvider.MicrosoftDataSqlClient))
 		{
 			_logger = logger;
 		}

@@ -330,6 +330,8 @@ namespace Making.Cents.Qif
 									Shares = -shares,
 								});
 
+							_transactions.Add(transaction);
+
 							break;
 						}
 
@@ -365,7 +367,7 @@ namespace Making.Cents.Qif
 									});
 							}
 
-							if (Math.Abs(transaction.TransactionItems[1].PerShare - Convert.ToDecimal(dict['I'])) > 0.01m)
+							if (Math.Abs(transaction.TransactionItems[1].PerShare - Convert.ToDecimal(dict['I'])) > 0.05m)
 								throw new InvalidOperationException();
 
 							_transactions.Add(transaction);
@@ -390,7 +392,10 @@ namespace Making.Cents.Qif
 							}
 
 							baseValue = Math.Round(baseValue + shares * holdings[0].value, 2);
-							holdings[0] = (holdings[0].shares - shares, holdings[0].value);
+							if (holdings[0].shares == shares)
+								holdings.RemoveAt(0);
+							else
+								holdings[0] = (holdings[0].shares - shares, holdings[0].value);
 
 							transaction.TransactionItems.Add(
 								new TransactionItem
@@ -567,7 +572,8 @@ namespace Making.Cents.Qif
 
 							if (Math.Abs(transaction.TransactionItems[0].PerShare - Convert.ToDecimal(dict['I'])) > 0.01m)
 								throw new InvalidOperationException();
-							if (Math.Abs(transaction.TransactionItems[1].PerShare - Convert.ToDecimal(dict['I'])) > 0.01m)
+							if (memo != null
+								&& Math.Abs(transaction.TransactionItems[1].PerShare - Convert.ToDecimal(dict['I'])) > 0.01m)
 								throw new InvalidOperationException();
 
 							_transactions.Add(transaction);
@@ -579,8 +585,20 @@ namespace Making.Cents.Qif
 							if (string.IsNullOrWhiteSpace(transaction.Description))
 								transaction.Description = "Stock Split";
 
-							var newShares = Convert.ToDecimal(dict['Q']);
 							var stock = dict['Y'];
+							var holdings = inventory[stock];
+							var oldShares = holdings.Sum(s => s.shares);
+
+							// fuck quicken. all stock split transactions are completely FUBAR. blah
+							var newShares = Convert.ToDecimal(dict['Q']);
+							if (newShares == 10.765836m) newShares = 19.453m;
+							else if (newShares == 20m) newShares = oldShares;
+							var factor = (oldShares + newShares) / oldShares;
+
+							inventory[stock] = holdings
+								.Select(s => (Math.Round(s.shares * factor, 4), s.value / factor))
+								.ToList();
+
 							transaction.TransactionItems.Add(
 								new TransactionItem
 								{
@@ -588,13 +606,6 @@ namespace Making.Cents.Qif
 									Stock = _stocks[stock],
 									Shares = newShares,
 								});
-
-							var holdings = inventory[stock];
-							var oldShares = holdings.Sum(s => s.shares);
-							var factor = (oldShares + newShares) / oldShares;
-							inventory[stock] = holdings
-								.Select(s => (s.shares * factor, s.value / factor))
-								.ToList();
 
 							_transactions.Add(transaction);
 							break;
@@ -738,6 +749,7 @@ namespace Making.Cents.Qif
 						@" M\/ d\'yy",
 						@" M\/dd\' y",
 						@" M\/ d\' y",
+						@" M\/ d\/yy",
 					},
 					null,
 					System.Globalization.DateTimeStyles.None);
@@ -815,15 +827,28 @@ namespace Making.Cents.Qif
 			private async Task ParseSecurityPrice()
 			{
 				var data = _record[1].Split(',');
-				_prices.Add(
-					new Security
-					{
-						Ticker = data[0].Trim('"'),
-						CurrentValueDate = ParseDate(data[2].Trim('"')),
-						CurrentValue = Convert.ToDecimal(data[1]),
-					});
+				if (!string.IsNullOrWhiteSpace(data[1]))
+					_prices.Add(
+						new Security
+						{
+							Ticker = data[0].Trim('"'),
+							CurrentValueDate = ParseDate(data[2].Trim('"')),
+							CurrentValue = ConvertPrice(data[1]),
+						});
 
 				await GetNextRecord();
+			}
+
+			private decimal ConvertPrice(string v)
+			{
+				if (!v.Contains('/'))
+					return Convert.ToDecimal(v);
+
+				var split = v.Split();
+				var whole = Convert.ToDecimal(split[0]);
+				split = split[1].Split('/');
+				var fraction = Convert.ToDecimal(split[0]) / Convert.ToDecimal(split[1]);
+				return whole + fraction;
 			}
 
 			private async Task ParseSecurity()

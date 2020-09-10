@@ -587,13 +587,11 @@ namespace Making.Cents.Qif
 
 							var stock = dict['Y'];
 							var holdings = inventory[stock];
-							var oldShares = holdings.Sum(s => s.shares);
 
-							// fuck quicken. all stock split transactions are completely FUBAR. blah
-							var newShares = Convert.ToDecimal(dict['Q']);
-							if (newShares == 10.765836m) newShares = 19.453m;
-							else if (newShares == 20m) newShares = oldShares;
-							var factor = (oldShares + newShares) / oldShares;
+							// fuck quicken. who the hell decided that 
+							// Quantity should be the multiplier instead of
+							// an actual quantity. and 10* that no less
+							var factor = Convert.ToDecimal(dict['Q']) / 10m;
 
 							inventory[stock] = holdings
 								.Select(s => (Math.Round(s.shares * factor, 4), s.value / factor))
@@ -604,7 +602,7 @@ namespace Making.Cents.Qif
 								{
 									Account = GetCurrentAccount(),
 									Stock = _stocks[stock],
-									Shares = newShares,
+									Shares = inventory[stock].Sum(s => s.shares) - holdings.Sum(s => s.shares),
 								});
 
 							_transactions.Add(transaction);

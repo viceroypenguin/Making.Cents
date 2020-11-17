@@ -2,7 +2,7 @@
 (
 	SecurityId int identity(0,1) not null
 		constraint [PK_Security] primary key,
-	Ticker varchar(10) not null,
+	Ticker varchar(50) not null,
 	Name varchar(200) not null,
 );
 

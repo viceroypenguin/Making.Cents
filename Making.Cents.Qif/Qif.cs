@@ -773,14 +773,23 @@ namespace Making.Cents.Qif
 						if (transaction.Description == "Opening Balance")
 						{
 							transaction.TransactionItems[^1].Account = _accounts["Initial Equity"];
-							_transactions.Add(transaction);
 						}
 						else
 							throw new NotImplementedException();
 					}
 
 					var existingTransfers = transferSplits
-						.Select(s => _transfers.GetOrDefault((_accounts[s.account], GetCurrentAccount(), date, Math.Abs(s.amount))))
+						.ToLookup(
+							s => (
+								fromAccount: _accounts[s.account],
+								toAccount: GetCurrentAccount(),
+								date),
+							s => s.amount)
+						.Select(s => _transfers.GetOrDefault((
+							s.Key.fromAccount,
+							s.Key.toAccount,
+							s.Key.date,
+							Math.Abs(s.Sum()))))
 						.Where(t => t != null)
 						.ToArray();
 					if (existingTransfers.Length == 1 && splits.Length == 1)
@@ -804,8 +813,17 @@ namespace Making.Cents.Qif
 
 						_transactions.Add(transaction);
 
-						foreach (var s in splits.Where(s => s.account[0] == '['))
-							_transfers[(GetCurrentAccount(), _accounts[s.account[1..^1]], date, Math.Abs(s.amount))] = transaction;
+						foreach (var s in splits
+							.Where(s => s.account[0] == '[')
+							.ToLookup(
+								s => (
+									fromAccount: GetCurrentAccount(),
+									toAccount: _accounts[s.account[1..^1]],
+									date),
+								s => s.amount))
+						{
+							_transfers[(s.Key.fromAccount, s.Key.toAccount, s.Key.date, Math.Abs(s.Sum()))] = transaction;
+						}
 					}
 				}
 				else

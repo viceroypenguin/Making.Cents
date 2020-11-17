@@ -53,7 +53,7 @@ namespace Making.Cents
 					.GetResult();
 				using (var context = container.Resolve<DbContext>())
 				{
-					foreach (var security in qif.Stocks)
+					foreach (var security in qif.Stocks.Where(s => s.Name != "CASH"))
 					{
 						security.StockId =
 							context.Securities
@@ -186,10 +186,6 @@ namespace Making.Cents
 					environment: environment,
 					clientId: clientId,
 					secret: secret));
-
-			foreach (var c in configuration.GetSection("accessTokens").GetChildren())
-			{
-			}
 		}
 
 		private static void RegisterServices(Container container)

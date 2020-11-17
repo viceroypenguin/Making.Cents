@@ -11,7 +11,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="DevExpressMvvm" Version="20.1.6" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.8" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>

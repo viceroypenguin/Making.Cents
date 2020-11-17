@@ -794,9 +794,10 @@ namespace Making.Cents.Qif
 						.ToArray();
 					if (existingTransfers.Length == 1 && splits.Length == 1)
 					{
-						existingTransfers[0]!.TransactionItems
-							.FirstOrDefault(ti => ReferenceEquals(ti.Account, GetCurrentAccount()))
-							.ClearedStatus = cleared;
+						var item = existingTransfers[0]!.TransactionItems
+							.FirstOrDefault(ti => ReferenceEquals(ti.Account, GetCurrentAccount()));
+						if (item != null)
+							item.ClearedStatus = cleared;
 					}
 					else
 					{

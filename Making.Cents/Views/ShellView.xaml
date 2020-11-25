@@ -6,7 +6,7 @@
         xmlns:views="clr-namespace:Making.Cents.Views"
 		xmlns:vm="clr-namespace:Making.Cents.ViewModels"
         mc:Ignorable="d"
-		d:DataContext="{d:DesignInstance vm:ShellViewModel, IsDesignTimeCreatable=True}"
+		d:DataContext="{d:DesignInstance vm:ShellViewModel}"
         Title="ShellView" Height="450" Width="800">
 	
     <Grid>

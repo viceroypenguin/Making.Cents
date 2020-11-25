@@ -1,22 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using DevExpress.Mvvm;
 using DevExpress.Mvvm.DataAnnotations;
-using Making.Cents.AccountsModule.ViewModels;
-using Making.Cents.AccountsModule.Views;
-using Making.Cents.Views;
+using Making.Cents.PlaidModule.ViewModels;
+using Making.Cents.PlaidModule.Views;
 
 namespace Making.Cents.ViewModels
 {
 	public class ShellViewModel : ViewModelBase
 	{
-		private readonly PlaidAccountsViewModel _plaidAccountsViewModel;
+		private readonly Func<PlaidAccountsViewModel> _newPlaidAccountsViewModel;
 
-		public ShellViewModel(PlaidAccountsViewModel plaidAccountsViewModel)
+		public ShellViewModel(Func<PlaidAccountsViewModel> newPlaidAccountsViewModel)
 		{
-			_plaidAccountsViewModel = plaidAccountsViewModel;
+			_newPlaidAccountsViewModel = newPlaidAccountsViewModel;
 		}
 
 		public Task InitializeAsync() => Task.CompletedTask;
@@ -24,13 +21,14 @@ namespace Making.Cents.ViewModels
 		[Command]
 		public void ViewPlaidAccounts()
 		{
+			var vm = _newPlaidAccountsViewModel();
 			var aView = new PlaidAccountsView
 			{
-				DataContext = _plaidAccountsViewModel,
+				DataContext = vm,
 			};
 			aView.Show();
 
-			_ = _plaidAccountsViewModel.InitializeAsync();
+			_ = vm.InitializeAsync();
 		}
 	}
 }

@@ -12,19 +12,20 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Going.Plaid" Version="2.1.0" />
 		<PackageReference Include="DevExpressMvvm" Version="20.1.6" />
 		<PackageReference Include="DryIoc.dll" Version="4.5.1" />
+		<PackageReference Include="Fody" Version="6.3.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
+		<PackageReference Include="PropertyChanged.Fody" Version="3.3.1" PrivateAssets="All" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\Making.Cents.Common\Making.Cents.Common.csproj" />
 		<ProjectReference Include="..\Making.Cents.Data\Making.Cents.Data.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="ViewModels\" />
-	  <Folder Include="Views\" />
 	</ItemGroup>
 
 </Project>

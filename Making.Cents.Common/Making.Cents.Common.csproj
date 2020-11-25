@@ -4,15 +4,17 @@
     <TargetFramework>net5.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<LangVersion>latest</LangVersion>
+		<AnalysisLevel>latest</AnalysisLevel>
 
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Going.Plaid" Version="1.2.1" />
+		<PackageReference Include="Going.Plaid" Version="2.1.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
 		<PackageReference Include="Sander.SequentialGuid" Version="1.0.0" />
 		<PackageReference Include="StronglyTypedId" Version="0.2.1" PrivateAssets="all" />
+		<PackageReference Include="System.Net.Http.Json" Version="5.0.0" />
 	</ItemGroup>
 	
 </Project>

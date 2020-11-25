@@ -4,49 +4,50 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using DryIoc;
-using EnumsNET;
 using Going.Plaid;
 using LinqToDB;
 using LinqToDB.Data;
-using Making.Cents.AccountsModule.ViewModels;
 using Making.Cents.Data;
 using Making.Cents.Data.Services;
 using Making.Cents.ViewModels;
 using Making.Cents.Views;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
 
 namespace Making.Cents
 {
-	internal class Bootstrapper
+	internal static class Bootstrapper
 	{
-
 		[DllImport("kernel32.dll", SetLastError = true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		static extern bool AllocConsole();
 
-		public static void Run()
+		public static void Run(string[] args)
 		{
-			var container = new Container();
-			container.RegisterInstance(BuildConfiguration());
+			var container = new Container(
+				rules => rules.With(FactoryMethod.ConstructorWithResolvableArguments),
+				scopeContext: new AsyncExecutionFlowScopeContext());
+			container.RegisterInstanceMany(BuildConfiguration());
 
 			InitializeLogging(container);
 
-			var logger = container.Resolve<ILogger<Bootstrapper>>();
+			var logger = container.Resolve<ILoggerFactory>().CreateLogger(typeof(Bootstrapper));
 			logger.LogDebug("Logging initialized");
 
-			RegisterDataSources(container);
-			RegisterServices(container);
-			RegisterViewModels(container);
+			container.RegisterOptions();
+			container.RegisterDataSources();
+			container.RegisterServices();
+			container.RegisterViewModels();
 			logger.LogDebug("DryIoC initialized");
 
 			InitializeDatabase(container);
 			logger.LogDebug("Database initialized");
 
 #if true
-			if (true)
+			if (false)
 			{
 				var qif = Task.Run(() => Qif.Qif.ReadFile(@"C:\Users\stuar\OneDrive\Documents\Finances\my money.qif", container.Resolve<ILogger<Qif.Qif>>()))
 					.GetAwaiter()
@@ -131,7 +132,7 @@ namespace Making.Cents
 			logger.LogDebug("Application started");
 		}
 
-		private static void InitializeLogging(Container container)
+		private static void InitializeLogging(this Container container)
 		{
 			AllocConsole();
 
@@ -172,31 +173,44 @@ namespace Making.Cents
 				.AddJsonFile("appsettings.secrets.json", optional: true)
 				.Build();
 
-		private static void RegisterDataSources(Container container)
+		private static void RegisterOptions(this Container container)
+		{
+			container.Register(typeof(IOptionsFactory<>), typeof(OptionsFactory<>), Reuse.Transient);
+			container.Register(typeof(IOptionsMonitorCache<>), typeof(OptionsCache<>), Reuse.Singleton);
+			container.Register(typeof(IOptionsMonitor<>), typeof(OptionsMonitor<>), Reuse.Singleton);
+			container.Register(typeof(IOptions<>), typeof(OptionsManager<>), Reuse.Singleton);
+			container.Register(typeof(IOptionsSnapshot<>), typeof(OptionsManager<>), Reuse.Scoped);
+		}
+
+		private static void RegisterDataSources(this Container container)
 		{
 			container.Register<DbContext>(Reuse.Transient, setup: Setup.With(allowDisposableTransient: true));
 
-			var configuration = container.Resolve<IConfigurationRoot>().GetSection("Plaid");
-
-			var environment = Enums.Parse<Going.Plaid.Environment>(configuration["environment"]);
-			var clientId = configuration["clientId"];
-			var secret = configuration["secret"];
-			container.RegisterInstance(
-				new PlaidClient(
-					environment: environment,
-					clientId: clientId,
-					secret: secret));
+			var config = container.Resolve<IConfigurationRoot>().GetSection("Plaid");
+			container.Configure<Making.Cents.PlaidModule.Models.PlaidOptions>(config);
+			container.Configure<Going.Plaid.PlaidOptions>(config);
+			container.Register<PlaidClient>(Reuse.Singleton);
 		}
 
-		private static void RegisterServices(Container container)
+		private static void Configure<T>(this Container container, IConfiguration config)
+			where T : class
+		{
+			var name = Options.DefaultName;
+			container.RegisterInstance<IOptionsChangeTokenSource<T>>(new ConfigurationChangeTokenSource<T>(name, config));
+			container.RegisterInstance<IConfigureOptions<T>>(new NamedConfigureFromConfigurationOptions<T>(name, config));
+		}
+
+		private static void RegisterServices(this Container container)
 		{
 			container.Register<AccountService>(Reuse.Singleton);
 		}
 
-		private static void RegisterViewModels(Container container)
+		private static void RegisterViewModels(this Container container)
 		{
+			container.RegisterAccountModule();
+			container.RegisterPlaidModule();
+
 			container.Register<ShellViewModel>(Reuse.Singleton);
-			container.Register<PlaidAccountsViewModel>(Reuse.Singleton);
 		}
 
 		private static void InitializeDatabase(Container container)

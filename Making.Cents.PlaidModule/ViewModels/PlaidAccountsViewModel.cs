@@ -13,6 +13,7 @@ using Microsoft.Extensions.Options;
 using PlaidAccountSubType = Going.Plaid.Entity.AccountSubType;
 using PlaidAccountType = Going.Plaid.Entity.AccountType;
 using PlaidOptions = Making.Cents.PlaidModule.Models.PlaidOptions;
+using PlaidLinkWindow = Making.Cents.PlaidModule.Views.PlaidLinkWindow;
 
 namespace Making.Cents.PlaidModule.ViewModels
 {
@@ -24,22 +25,22 @@ namespace Making.Cents.PlaidModule.ViewModels
 
 		private readonly AccountService _accountService;
 		private readonly PlaidClient _plaidClient;
-		private readonly Func<PlaidLinkViewModel> _newPlaidLinkViewModel;
+		private readonly IReadOnlyDictionary<string, string> _items;
+		private readonly Func<PlaidLinkWindow> _newPlaidLinkWindow;
 		private readonly ILogger<PlaidAccountsViewModel> _logger;
-		private readonly Dictionary<string, string> _items;
 
 		public PlaidAccountsViewModel(
 			AccountService accountService,
 			PlaidClient plaidClient,
 			IOptionsSnapshot<PlaidOptions> plaidOptions,
-			Func<PlaidLinkViewModel> newPlaidLinkViewModel,
+			Func<PlaidLinkWindow> newPlaidLinkWindow,
 			ILogger<PlaidAccountsViewModel> logger)
 		{
 			_accountService = accountService;
 			_plaidClient = plaidClient;
-			_newPlaidLinkViewModel = newPlaidLinkViewModel;
-			_logger = logger;
 			_items = plaidOptions.Value.AccessTokens;
+			_newPlaidLinkWindow = newPlaidLinkWindow;
+			_logger = logger;
 
 			PlaidSources = _items.Keys.ToArray();
 			SelectedPlaidSource = PlaidSources.FirstOrDefault();
@@ -224,12 +225,8 @@ namespace Making.Cents.PlaidModule.ViewModels
 					MessageIcon.Error) == MessageResult.No)
 				return false;
 
-			var vm = _newPlaidLinkViewModel();
-			var aView = new Views.PlaidLinkWindow
-			{
-				DataContext = vm,
-			};
-			return aView.ShowDialog() ?? false;
+			var window = _newPlaidLinkWindow();
+			return window.RefreshAccessToken(source);
 		}
 		#endregion
 	}

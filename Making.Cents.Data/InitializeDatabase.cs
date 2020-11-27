@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using EnumsNET;
 using LinqToDB;
 using LinqToDB.Data;
+using Making.Cents.Common.Extensions;
 using Making.Cents.Data.Models;
 using Microsoft.Extensions.Logging;
 
@@ -105,21 +106,19 @@ namespace Making.Cents.Data
 
 		#region Embedded Scripts
 		private const string ResourcePrefix = "Making.Cents.Data.Scripts.";
-		private IList<string> GetEmbeddedScripts() =>
+		private static IList<string> GetEmbeddedScripts() =>
 			Assembly.GetExecutingAssembly()
 				.GetManifestResourceNames()
 				.Where(s => Path.GetExtension(s).Equals(".sql", StringComparison.OrdinalIgnoreCase))
 				.Select(s => s.Replace(ResourcePrefix, ""))
 				.ToList();
 
-		private string GetSqlScript(string scriptName)
+		private static string GetSqlScript(string scriptName)
 		{
 			if (!scriptName.StartsWith(ResourcePrefix))
 				scriptName = ResourcePrefix + scriptName;
 
-			using (var str = Assembly.GetExecutingAssembly().GetManifestResourceStream(scriptName))
-			using (var sr = new StreamReader(str!))
-				return sr.ReadToEnd();
+			return Assembly.GetExecutingAssembly().GetEmbeddedResource(scriptName);
 		}
 		#endregion
 	}

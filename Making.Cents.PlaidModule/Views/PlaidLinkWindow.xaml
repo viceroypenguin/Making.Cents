@@ -2,14 +2,20 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
+        xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Making.Cents.PlaidModule.Views"
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         mc:Ignorable="d"
+		Loaded="Window_Loaded"
         Title="PlaidLinkWindow" Height="450" Width="800">
-	
-    <DockPanel>
-		<wv2:WebView2 Name="webView"
-                      Source="https://www.microsoft.com" />
+
+	<dxmvvm:Interaction.Behaviors>
+		<dx:MessageBoxService Name="MessageBoxService" />
+	</dxmvvm:Interaction.Behaviors>
+
+	<DockPanel>
+		<wv2:WebView2 Name="webView" />
 	</DockPanel>
 </Window>

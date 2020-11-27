@@ -10,5 +10,6 @@ namespace Making.Cents.PlaidModule.Models
 	{
 		public Dictionary<string, string> AccessTokens { get; init; } =
 			new Dictionary<string, string>();
+		public string PlaidUserId { get; init; } = null!;
 	}
 }

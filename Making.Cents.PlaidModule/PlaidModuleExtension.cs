@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using DryIoc;
 using Making.Cents.PlaidModule.ViewModels;
+using Making.Cents.PlaidModule.Views;
 
 namespace Making.Cents
 {
@@ -13,7 +14,7 @@ namespace Making.Cents
 		public static Container RegisterPlaidModule(this Container container)
 		{
 			container.Register<PlaidAccountsViewModel>(setup: Setup.With(openResolutionScope: true));
-			container.Register<PlaidLinkViewModel>();
+			container.Register<PlaidLinkWindow>();
 			return container;
 		}
 	}

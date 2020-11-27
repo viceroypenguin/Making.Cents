@@ -29,4 +29,8 @@
 		<ProjectReference Include="..\Making.Cents.Data\Making.Cents.Data.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<EmbeddedResource Include="Resources\**" />
+	</ItemGroup>
+
 </Project>

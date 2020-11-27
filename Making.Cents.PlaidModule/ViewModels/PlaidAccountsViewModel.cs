@@ -8,6 +8,7 @@ using Going.Plaid;
 using Making.Cents.Common.Enums;
 using Making.Cents.Common.Models;
 using Making.Cents.Data.Services;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PlaidAccountSubType = Going.Plaid.Entity.AccountSubType;
 using PlaidAccountType = Going.Plaid.Entity.AccountType;
@@ -18,17 +19,26 @@ namespace Making.Cents.PlaidModule.ViewModels
 	public class PlaidAccountsViewModel : ViewModelBase
 	{
 		#region Initialization
+		private IMessageBoxService MessageBoxService =>
+			GetService<IMessageBoxService>();
+
 		private readonly AccountService _accountService;
 		private readonly PlaidClient _plaidClient;
+		private readonly Func<PlaidLinkViewModel> _newPlaidLinkViewModel;
+		private readonly ILogger<PlaidAccountsViewModel> _logger;
 		private readonly Dictionary<string, string> _items;
 
 		public PlaidAccountsViewModel(
 			AccountService accountService,
 			PlaidClient plaidClient,
-			IOptionsSnapshot<PlaidOptions> plaidOptions)
+			IOptionsSnapshot<PlaidOptions> plaidOptions,
+			Func<PlaidLinkViewModel> newPlaidLinkViewModel,
+			ILogger<PlaidAccountsViewModel> logger)
 		{
 			_accountService = accountService;
 			_plaidClient = plaidClient;
+			_newPlaidLinkViewModel = newPlaidLinkViewModel;
+			_logger = logger;
 			_items = plaidOptions.Value.AccessTokens;
 
 			PlaidSources = _items.Keys.ToArray();
@@ -58,17 +68,25 @@ namespace Making.Cents.PlaidModule.ViewModels
 				return;
 
 			if (!_accounts.ContainsKey(SelectedPlaidSource))
-				_accounts[SelectedPlaidSource] = await GetPlaidAccounts(SelectedPlaidSource);
-			Accounts = _accounts[SelectedPlaidSource];
+			{
+				var accounts = await GetPlaidAccounts(SelectedPlaidSource);
+				if (accounts != null)
+					_accounts[SelectedPlaidSource] = accounts;
+			}
+
+			Accounts = _accounts.GetValueOrDefault(SelectedPlaidSource, Array.Empty<Account>());
 		}
 		#endregion
 
 		#region Plaid
 		private Dictionary<string, Account>? _accountsByPlaidId;
 
-		public async Task<IReadOnlyList<Account>> GetPlaidAccounts(string source)
+		public async Task<IReadOnlyList<Account>?> GetPlaidAccounts(string source)
 		{
+			_logger.LogInformation("Downloading Accounts for plaid source {source}", source);
 			var dbAccounts = await _accountService.GetDbAccounts();
+
+			_logger.LogTrace("Starting plaid api call.");
 			var plaidAccounts = await _plaidClient
 				.FetchAccountAsync(
 					new Going.Plaid.Balance.GetAccountRequest()
@@ -77,9 +95,28 @@ namespace Making.Cents.PlaidModule.ViewModels
 					});
 
 			if (!plaidAccounts.IsSuccessStatusCode)
-				// parse exception type and open webview to re-auth account
-				throw new InvalidOperationException(plaidAccounts.Exception!.ErrorMessage);
+			{
+				_logger.LogWarning(
+					"Error downloading plaid accounts. Type: {type}; Code: {code}",
+					plaidAccounts.Exception!.ErrorType,
+					plaidAccounts.Exception!.ErrorCode);
+				switch (plaidAccounts.Exception.ErrorCode)
+				{
+					case Going.Plaid.Entity.ErrorCode.ItemLoginRequired:
+						if (UpdateLink(source))
+							return await GetPlaidAccounts(source);
+						return null;
 
+					default:
+						MessageBoxService.ShowMessage(
+							messageBoxText: $"Unable to download accounts for Source '{source}'",
+							caption: "Failure Downloading Accounts",
+							MessageButton.OK);
+						throw new InvalidOperationException(plaidAccounts.Exception!.ErrorMessage);
+				}
+			}
+
+			_logger.LogInformation("Downloaded {count} accounts from Plaid.", plaidAccounts.Accounts.Length);
 			var map = _accountsByPlaidId
 				??= dbAccounts
 					.Where(a => a.PlaidAccountData != null)
@@ -102,6 +139,7 @@ namespace Making.Cents.PlaidModule.ViewModels
 				.ToArray();
 		}
 
+		#region Translation
 		private static AccountType GetAccountType(PlaidAccountType type) =>
 			type switch
 			{
@@ -175,6 +213,24 @@ namespace Making.Cents.PlaidModule.ViewModels
 
 				_ => AccountSubType.OtherAsset,
 			};
+		#endregion
+
+		public bool UpdateLink(string source)
+		{
+			if (MessageBoxService.ShowMessage(
+					messageBoxText: $"The token for Source '{source}' has expired, but can be refreshed. Would you like to refresh the link?",
+					caption: "Failed Downloading Accounts",
+					MessageButton.YesNo,
+					MessageIcon.Error) == MessageResult.No)
+				return false;
+
+			var vm = _newPlaidLinkViewModel();
+			var aView = new Views.PlaidLinkWindow
+			{
+				DataContext = vm,
+			};
+			return aView.ShowDialog() ?? false;
+		}
 		#endregion
 	}
 }

@@ -13,13 +13,14 @@
 
 	<ItemGroup>
 		<PackageReference Include="Going.Plaid" Version="2.1.0" />
-		<PackageReference Include="DevExpressMvvm" Version="20.1.6" />
+		<PackageReference Include="DevExpressMvvm" Version="20.2.3" />
 		<PackageReference Include="DryIoc.dll" Version="4.5.1" />
 		<PackageReference Include="Fody" Version="6.3.0">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
+		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.664.37" />
 		<PackageReference Include="PropertyChanged.Fody" Version="3.3.1" PrivateAssets="All" />
 	</ItemGroup>
 

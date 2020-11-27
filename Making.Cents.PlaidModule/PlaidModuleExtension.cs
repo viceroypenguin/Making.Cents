@@ -13,6 +13,7 @@ namespace Making.Cents
 		public static Container RegisterPlaidModule(this Container container)
 		{
 			container.Register<PlaidAccountsViewModel>(setup: Setup.With(openResolutionScope: true));
+			container.Register<PlaidLinkViewModel>();
 			return container;
 		}
 	}

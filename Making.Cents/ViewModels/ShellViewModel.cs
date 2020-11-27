@@ -26,9 +26,7 @@ namespace Making.Cents.ViewModels
 			{
 				DataContext = vm,
 			};
-			aView.Show();
-
-			_ = vm.InitializeAsync();
+			aView.ShowDialog();
 		}
 	}
 }

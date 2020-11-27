@@ -13,7 +13,7 @@
 	</PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DevExpressMvvm" Version="20.1.6" />
+    <PackageReference Include="DevExpressMvvm" Version="20.2.3" />
     <PackageReference Include="DryIoc.dll" Version="4.5.1" />
     <PackageReference Include="Enums.NET" Version="3.0.3" />
     <PackageReference Include="Fody" Version="6.3.0">

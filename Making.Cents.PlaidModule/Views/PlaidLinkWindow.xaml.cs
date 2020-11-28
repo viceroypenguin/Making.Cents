@@ -1,17 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using DevExpress.Mvvm;
 using Going.Plaid;
 using Going.Plaid.Entity;
@@ -50,6 +41,7 @@ namespace Making.Cents.PlaidModule.Views
 		private Mode _mode = Mode.New;
 		#endregion
 
+		#region Refresh Token
 		public bool RefreshAccessToken(string source)
 		{
 			_logger.LogInformation("Starting Token refresh for source {source}", source);
@@ -59,25 +51,10 @@ namespace Making.Cents.PlaidModule.Views
 			return this.ShowDialog() ?? false;
 		}
 
-		private void Window_Loaded(object sender, RoutedEventArgs e)
-		{
-			_logger.LogTrace("Window loaded; Initializing webview/Plaid Link.");
-
-			switch (_mode)
-			{
-				case Mode.New:
-					throw new NotImplementedException();
-
-				case Mode.Refresh:
-					_ = OnLoadForRefresh();
-					break;
-			}
-		}
-
-		private async Task OnLoadForRefresh()
+		private Task<CreateLinkTokenResponse> GetRefreshToken()
 		{
 			var token = _plaidOptions.AccessTokens[_source!];
-			var linkToken = await _plaidClient.CreateLinkTokenAsync(
+			return _plaidClient.CreateLinkTokenAsync(
 				new CreateLinkTokenRequest()
 				{
 					AccessToken = token,
@@ -87,6 +64,21 @@ namespace Making.Cents.PlaidModule.Views
 					CountryCodes = new[] { "US" },
 				});
 
+		}
+		#endregion
+
+		#region Event Handlers
+		private async void Window_Loaded(object sender, RoutedEventArgs e)
+		{
+			_logger.LogTrace("Window loaded; Initializing webview/Plaid Link.");
+
+			var linkToken = await (
+				_mode switch
+				{
+					Mode.New => throw new NotImplementedException(),
+					Mode.Refresh => GetRefreshToken(),
+					_ => throw new InvalidOperationException("Should never get here."),
+				});
 			if (!linkToken.IsSuccessStatusCode)
 			{
 				_logger.LogWarning(
@@ -105,9 +97,51 @@ namespace Making.Cents.PlaidModule.Views
 			_logger.LogInformation("Link Token obtained; showing link dialog.");
 
 			await webView.EnsureCoreWebView2Async();
-			var html = await Assembly.GetExecutingAssembly()
-				.GetEmbeddedResourceAsync("Making.Cents.PlaidModule.Resources.PlaidLink.html");
-			webView.NavigateToString(html);
+
+			EventHandler<Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs> navigationFunc = null!;
+			navigationFunc = NavigationCompleted;
+			webView.NavigationCompleted += navigationFunc;
+
+			var folder = Path.GetDirectoryName(
+				Assembly.GetExecutingAssembly().Location)!;
+			var htmlFileLocation = Path.Combine(folder, "Resources", "PlaidLink.html");
+			var uri = "file:///" + htmlFileLocation.Replace('\\', '/');
+			webView.Source = new Uri(uri);
+
+			async void NavigationCompleted(object? sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs e)
+			{
+				webView.NavigationCompleted -= navigationFunc;
+				await webView.ExecuteScriptAsync($"RunPlaidLink('{linkToken.LinkToken}');");
+
+				_logger.LogInformation("Link Dialog code complete.");
+			}
 		}
+
+		private class LinkResponse
+		{
+			public bool Success { get; set; }
+			public string? Token { get; set; }
+		}
+
+		private void webView_WebMessageReceived(object sender, Microsoft.Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs e)
+		{
+			var response = System.Text.Json.JsonSerializer.Deserialize<LinkResponse>(e.WebMessageAsJson)!;
+			_logger.LogInformation(
+				"Completed link process. Success: {Success}; Token: {Token}.",
+				response.Success,
+				response.Token);
+
+			if (_mode == Mode.New)
+			{
+				// update appsettings.secret.json
+				throw new NotImplementedException();
+			}
+
+			_logger.LogInformation("Closing Dialog.");
+
+			this.DialogResult = response.Success;
+			this.Close();
+		}
+		#endregion
 	}
 }

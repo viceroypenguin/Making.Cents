@@ -30,7 +30,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<EmbeddedResource Include="Resources\**" />
+		<None Update="Resources\PlaidLink.html" CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
+
 
 </Project>

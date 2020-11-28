@@ -9,13 +9,14 @@
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         mc:Ignorable="d"
 		Loaded="Window_Loaded"
-        Title="PlaidLinkWindow" Height="450" Width="800">
+        Title="PlaidLinkWindow" Height="750" Width="550">
 
 	<dxmvvm:Interaction.Behaviors>
 		<dx:MessageBoxService Name="MessageBoxService" />
 	</dxmvvm:Interaction.Behaviors>
 
 	<DockPanel>
-		<wv2:WebView2 Name="webView" />
+		<wv2:WebView2 Name="webView" 
+					  WebMessageReceived="webView_WebMessageReceived" />
 	</DockPanel>
 </Window>

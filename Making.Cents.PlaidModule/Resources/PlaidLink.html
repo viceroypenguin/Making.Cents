@@ -4,8 +4,35 @@
 <head>
     <meta charset="utf-8" />
     <title></title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.3/jquery.min.js"></script>
+    <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+    <script type="text/javascript">
+        function RunPlaidLink(token) {
+			const configs = {
+				// Required, fetch a link token from your server and pass it
+				// back to your app to initialize Link.
+				token: token,
+				onLoad: function () { },
+				onSuccess: function (public_token, metadata) {
+					window.chrome.webview.postMessage({
+						success: true,
+						token: public_token
+					});
+				},
+				onExit: function (err, metadata) {
+					window.chrome.webview.postMessage({
+						success: false,
+						error: err
+					});
+				}
+			};
+
+			let handler = Plaid.create(configs);
+			handler.open();
+		}
+    </script>
 </head>
-<body>
-    <h1>PlaidTest</h1>
+<body onload="%REPLACE%">
+    <h1>Plaid</h1>
 </body>
 </html>

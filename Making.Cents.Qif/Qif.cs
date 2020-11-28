@@ -60,10 +60,11 @@ namespace Making.Cents.Qif
 					["Initial Equity"] = new Account { Name = "Initial Equity", AccountType = AccountType.Income, AccountSubType = AccountSubType.Income, },
 				};
 
+			private static readonly Guid s_cashGuid = new Guid("ca000000-0000-0000-0000-000000000000");
 			private readonly Dictionary<string, Security> _stocks =
 				new Dictionary<string, Security>(StringComparer.OrdinalIgnoreCase)
 				{
-					["CASH"] = new Security { StockId = (SecurityId)0, Name = "CASH", },
+					["CASH"] = new Security { StockId = s_cashGuid, Name = "CASH", },
 				};
 
 			private readonly List<Security> _prices = new List<Security>();
@@ -207,7 +208,7 @@ namespace Making.Cents.Qif
 				}
 			}
 
-			private (AccountType, AccountSubType) ParseAccountType(string detail) =>
+			private static (AccountType, AccountSubType) ParseAccountType(string detail) =>
 				detail switch
 				{
 					"Cash" => (AccountType.Asset, AccountSubType.Cash),
@@ -259,7 +260,7 @@ namespace Making.Cents.Qif
 							new TransactionItem
 							{
 								Account = GetCurrentAccount(),
-								StockId = (SecurityId)0,
+								StockId = s_cashGuid,
 								ClearedStatus = cleared,
 								Memo = memo,
 							},
@@ -361,7 +362,7 @@ namespace Making.Cents.Qif
 									new TransactionItem
 									{
 										Account = _accounts["Fees"],
-										StockId = (SecurityId)0,
+										StockId = s_cashGuid,
 										Amount = amt,
 										Shares = amt,
 									});
@@ -416,7 +417,7 @@ namespace Making.Cents.Qif
 									new TransactionItem
 									{
 										Account = _accounts["Fees"],
-										StockId = (SecurityId)0,
+										StockId = s_cashGuid,
 										Amount = amt,
 										Shares = amt,
 									});
@@ -426,7 +427,7 @@ namespace Making.Cents.Qif
 								new TransactionItem
 								{
 									Account = _accounts["Investment Income:Capital Gains"],
-									StockId = (SecurityId)0,
+									StockId = s_cashGuid,
 									Amount = -gains,
 									Shares = -gains,
 								});
@@ -481,7 +482,7 @@ namespace Making.Cents.Qif
 								new TransactionItem
 								{
 									Account = _accounts["Investment Income:Dividends"],
-									StockId = (SecurityId)0,
+									StockId = s_cashGuid,
 									Amount = -cashAmount,
 									Shares = -cashAmount,
 								});
@@ -517,7 +518,7 @@ namespace Making.Cents.Qif
 								new TransactionItem
 								{
 									Account = _accounts["Investment Income:Dividends"],
-									StockId = (SecurityId)0,
+									StockId = s_cashGuid,
 									Amount = -cashAmount,
 									Shares = -cashAmount,
 								});
@@ -552,7 +553,7 @@ namespace Making.Cents.Qif
 									new TransactionItem
 									{
 										Account = _accounts["Initial Equity"],
-										StockId = (SecurityId)0,
+										StockId = s_cashGuid,
 										Amount = -cashAmount,
 										Shares = -cashAmount,
 									});
@@ -650,7 +651,7 @@ namespace Making.Cents.Qif
 								new TransactionItem
 								{
 									Account = _accounts["Investment Income:Interest"],
-									StockId = (SecurityId)0,
+									StockId = s_cashGuid,
 									Amount = -cashAmount,
 									Shares = -cashAmount,
 								});
@@ -702,7 +703,7 @@ namespace Making.Cents.Qif
 							new TransactionItem
 							{
 								Account = GetCurrentAccount(),
-								StockId = (SecurityId)0,
+								StockId = s_cashGuid,
 								Amount = amount,
 								Shares = amount,
 								ClearedStatus = cleared,
@@ -759,7 +760,7 @@ namespace Making.Cents.Qif
 						.Select(s => new TransactionItem
 						{
 							Account = _accounts[s.account[0] == '[' ? s.account[1..^1] : s.account],
-							StockId = (SecurityId)0,
+							StockId = s_cashGuid,
 							Amount = s.amount,
 							Shares = s.amount,
 							Memo = s.memo,

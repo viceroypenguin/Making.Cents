@@ -39,31 +39,31 @@ namespace Making.Cents.Data.Models
 	[Table(Schema="dbo", Name="Account")]
 	public partial class Account
 	{
-		[ValueConverter(ConverterType = typeof(AccountIdConverter)), PrimaryKey,                                                        Identity] public AccountId        AccountId        { get; set; } // int
-		[Column,                                                                                                                        NotNull ] public string           Name             { get; set; } // varchar(1000)
-		[Column,                                                     ValueConverter(ConverterType = typeof(AccountTypeIdConverter)),    NotNull ] public AccountTypeId    AccountTypeId    { get; set; } // int
-		[Column,                                                     ValueConverter(ConverterType = typeof(AccountSubTypeIdConverter)), NotNull ] public AccountSubTypeId AccountSubTypeId { get; set; } // int
-		[Column,                                                        Nullable                                                                ] public string           PlaidSource      { get; set; } // varchar(50)
-		[Column,                                                        Nullable                                                                ] public string           PlaidAccountData { get; set; } // varchar(max)
+		[ValueConverter(ConverterType = typeof(AccountIdConverter)), PrimaryKey,                                                        NotNull] public AccountId        AccountId        { get; set; } // uniqueidentifier
+		[Column,                                                                                                                        NotNull] public string           Name             { get; set; } // varchar(1000)
+		[Column,                                                     ValueConverter(ConverterType = typeof(AccountTypeIdConverter)),    NotNull] public AccountTypeId    AccountTypeId    { get; set; } // int
+		[Column,                                                     ValueConverter(ConverterType = typeof(AccountSubTypeIdConverter)), NotNull] public AccountSubTypeId AccountSubTypeId { get; set; } // int
+		[Column,                                                        Nullable                                                               ] public string           PlaidSource      { get; set; } // varchar(50)
+		[Column,                                                        Nullable                                                               ] public string           PlaidAccountData { get; set; } // varchar(max)
 
 		#region Associations
 
 		/// <summary>
 		/// FK_Account_AccountSubType
 		/// </summary>
-		[Association(ThisKey="AccountSubTypeId", OtherKey="AccountSubTypeId", CanBeNull=false, Relationship=Relationship.ManyToOne, KeyName="FK_Account_AccountSubType", BackReferenceName="Accounts")]
+		[Association(ThisKey="AccountSubTypeId", OtherKey="AccountSubTypeId", CanBeNull=false, Relationship=LinqToDB.Mapping.Relationship.ManyToOne, KeyName="FK_Account_AccountSubType", BackReferenceName="Accounts")]
 		public EnumTable_AccountSubType AccountSubType { get; set; }
 
 		/// <summary>
 		/// FK_Account_AccountType
 		/// </summary>
-		[Association(ThisKey="AccountTypeId", OtherKey="AccountTypeId", CanBeNull=false, Relationship=Relationship.ManyToOne, KeyName="FK_Account_AccountType", BackReferenceName="Accounts")]
+		[Association(ThisKey="AccountTypeId", OtherKey="AccountTypeId", CanBeNull=false, Relationship=LinqToDB.Mapping.Relationship.ManyToOne, KeyName="FK_Account_AccountType", BackReferenceName="Accounts")]
 		public EnumTable_AccountType AccountType { get; set; }
 
 		/// <summary>
 		/// FK_TransactionItem_Account_BackReference
 		/// </summary>
-		[Association(ThisKey="AccountId", OtherKey="AccountId", CanBeNull=true, Relationship=Relationship.OneToMany, IsBackReference=true)]
+		[Association(ThisKey="AccountId", OtherKey="AccountId", CanBeNull=true, Relationship=LinqToDB.Mapping.Relationship.OneToMany, IsBackReference=true)]
 		public IEnumerable<TransactionItem> TransactionItems { get; set; }
 
 		#endregion
@@ -80,7 +80,7 @@ namespace Making.Cents.Data.Models
 		/// <summary>
 		/// FK_Account_AccountSubType_BackReference
 		/// </summary>
-		[Association(ThisKey="AccountSubTypeId", OtherKey="AccountSubTypeId", CanBeNull=true, Relationship=Relationship.OneToMany, IsBackReference=true)]
+		[Association(ThisKey="AccountSubTypeId", OtherKey="AccountSubTypeId", CanBeNull=true, Relationship=LinqToDB.Mapping.Relationship.OneToMany, IsBackReference=true)]
 		public IEnumerable<Account> Accounts { get; set; }
 
 		#endregion
@@ -97,7 +97,7 @@ namespace Making.Cents.Data.Models
 		/// <summary>
 		/// FK_Account_AccountType_BackReference
 		/// </summary>
-		[Association(ThisKey="AccountTypeId", OtherKey="AccountTypeId", CanBeNull=true, Relationship=Relationship.OneToMany, IsBackReference=true)]
+		[Association(ThisKey="AccountTypeId", OtherKey="AccountTypeId", CanBeNull=true, Relationship=LinqToDB.Mapping.Relationship.OneToMany, IsBackReference=true)]
 		public IEnumerable<Account> Accounts { get; set; }
 
 		#endregion
@@ -114,7 +114,7 @@ namespace Making.Cents.Data.Models
 		/// <summary>
 		/// FK_TransactionItem_ClearedStatus_BackReference
 		/// </summary>
-		[Association(ThisKey="ClearedStatusId", OtherKey="ClearedStatusId", CanBeNull=true, Relationship=Relationship.OneToMany, IsBackReference=true)]
+		[Association(ThisKey="ClearedStatusId", OtherKey="ClearedStatusId", CanBeNull=true, Relationship=LinqToDB.Mapping.Relationship.OneToMany, IsBackReference=true)]
 		public IEnumerable<TransactionItem> TransactionItems { get; set; }
 
 		#endregion
@@ -123,22 +123,22 @@ namespace Making.Cents.Data.Models
 	[Table(Schema="dbo", Name="Security")]
 	public partial class Security
 	{
-		[ValueConverter(ConverterType = typeof(SecurityIdConverter)), PrimaryKey, Identity] public SecurityId SecurityId { get; set; } // int
-		[Column,                                                      NotNull             ] public string     Ticker     { get; set; } // varchar(10)
-		[Column,                                                      NotNull             ] public string     Name       { get; set; } // varchar(200)
+		[ValueConverter(ConverterType = typeof(SecurityIdConverter)), PrimaryKey, NotNull] public SecurityId SecurityId { get; set; } // uniqueidentifier
+		[Column,                                                                  NotNull] public string     Ticker     { get; set; } // varchar(50)
+		[Column,                                                                  NotNull] public string     Name       { get; set; } // varchar(200)
 
 		#region Associations
 
 		/// <summary>
 		/// FK_SecurityValue_Security_BackReference
 		/// </summary>
-		[Association(ThisKey="SecurityId", OtherKey="SecurityId", CanBeNull=true, Relationship=Relationship.OneToMany, IsBackReference=true)]
+		[Association(ThisKey="SecurityId", OtherKey="SecurityId", CanBeNull=true, Relationship=LinqToDB.Mapping.Relationship.OneToMany, IsBackReference=true)]
 		public IEnumerable<SecurityValue> SecurityValues { get; set; }
 
 		/// <summary>
 		/// FK_TransactionItem_Security_BackReference
 		/// </summary>
-		[Association(ThisKey="SecurityId", OtherKey="SecurityId", CanBeNull=true, Relationship=Relationship.OneToMany, IsBackReference=true)]
+		[Association(ThisKey="SecurityId", OtherKey="SecurityId", CanBeNull=true, Relationship=LinqToDB.Mapping.Relationship.OneToMany, IsBackReference=true)]
 		public IEnumerable<TransactionItem> TransactionItems { get; set; }
 
 		#endregion
@@ -147,7 +147,7 @@ namespace Making.Cents.Data.Models
 	[Table(Schema="dbo", Name="SecurityValue")]
 	public partial class SecurityValue
 	{
-		[ValueConverter(ConverterType = typeof(SecurityIdConverter)), PrimaryKey(1), NotNull] public SecurityId SecurityId { get; set; } // int
+		[ValueConverter(ConverterType = typeof(SecurityIdConverter)), PrimaryKey(1), NotNull] public SecurityId SecurityId { get; set; } // uniqueidentifier
 		[                                                             PrimaryKey(2), NotNull] public DateTime   Date       { get; set; } // date
 		[Column,                                                                     NotNull] public decimal    Value      { get; set; } // money
 
@@ -156,7 +156,7 @@ namespace Making.Cents.Data.Models
 		/// <summary>
 		/// FK_SecurityValue_Security
 		/// </summary>
-		[Association(ThisKey="SecurityId", OtherKey="SecurityId", CanBeNull=false, Relationship=Relationship.ManyToOne, KeyName="FK_SecurityValue_Security", BackReferenceName="SecurityValues")]
+		[Association(ThisKey="SecurityId", OtherKey="SecurityId", CanBeNull=false, Relationship=LinqToDB.Mapping.Relationship.ManyToOne, KeyName="FK_SecurityValue_Security", BackReferenceName="SecurityValues")]
 		public Security Security { get; set; }
 
 		#endregion
@@ -165,17 +165,17 @@ namespace Making.Cents.Data.Models
 	[Table(Schema="dbo", Name="Transaction")]
 	public partial class Transaction
 	{
-		[ValueConverter(ConverterType = typeof(TransactionIdConverter)), PrimaryKey,  Identity] public TransactionId TransactionId { get; set; } // int
-		[Column,                                                         NotNull              ] public DateTime      Date          { get; set; } // date
-		[Column,                                                         NotNull              ] public string        Description   { get; set; } // varchar(255)
-		[Column,                                                            Nullable          ] public string        Memo          { get; set; } // varchar(255)
+		[ValueConverter(ConverterType = typeof(TransactionIdConverter)), PrimaryKey,  NotNull] public TransactionId TransactionId { get; set; } // uniqueidentifier
+		[Column,                                                                      NotNull] public DateTime      Date          { get; set; } // date
+		[Column,                                                                      NotNull] public string        Description   { get; set; } // varchar(255)
+		[Column,                                                            Nullable         ] public string        Memo          { get; set; } // varchar(255)
 
 		#region Associations
 
 		/// <summary>
 		/// FK_TransactionItem_Transaction_BackReference
 		/// </summary>
-		[Association(ThisKey="TransactionId", OtherKey="TransactionId", CanBeNull=true, Relationship=Relationship.OneToMany, IsBackReference=true)]
+		[Association(ThisKey="TransactionId", OtherKey="TransactionId", CanBeNull=true, Relationship=LinqToDB.Mapping.Relationship.OneToMany, IsBackReference=true)]
 		public IEnumerable<TransactionItem> TransactionItems { get; set; }
 
 		#endregion
@@ -184,7 +184,7 @@ namespace Making.Cents.Data.Models
 	[Table(Schema="dbo", Name="TransactionBalance", IsView=true)]
 	public partial class TransactionBalance
 	{
-		[Column, ValueConverter(ConverterType = typeof(TransactionIdConverter)), NotNull] public TransactionId TransactionId { get; set; } // int
+		[Column, ValueConverter(ConverterType = typeof(TransactionIdConverter)), NotNull] public TransactionId TransactionId { get; set; } // uniqueidentifier
 		[Column,    Nullable                                                            ] public decimal?      Balance       { get; set; } // money
 		[Column,    Nullable                                                            ] public long?         ItemCount     { get; set; } // bigint
 	}
@@ -192,10 +192,10 @@ namespace Making.Cents.Data.Models
 	[Table(Schema="dbo", Name="TransactionItem")]
 	public partial class TransactionItem
 	{
-		[ValueConverter(ConverterType = typeof(TransactionIdConverter)),     PrimaryKey(1),                                                       NotNull    ] public TransactionId      TransactionId      { get; set; } // int
-		[ValueConverter(ConverterType = typeof(TransactionItemIdConverter)), PrimaryKey(2),                                                       Identity   ] public TransactionItemId  TransactionItemId  { get; set; } // int
-		[Column,                                                             ValueConverter(ConverterType = typeof(AccountIdConverter)),          NotNull    ] public AccountId          AccountId          { get; set; } // int
-		[Column,                                                             ValueConverter(ConverterType = typeof(SecurityIdConverter)),         NotNull    ] public SecurityId         SecurityId         { get; set; } // int
+		[ValueConverter(ConverterType = typeof(TransactionIdConverter)),     PrimaryKey(1),                                                       NotNull    ] public TransactionId      TransactionId      { get; set; } // uniqueidentifier
+		[ValueConverter(ConverterType = typeof(TransactionItemIdConverter)), PrimaryKey(2),                                                       NotNull    ] public TransactionItemId  TransactionItemId  { get; set; } // uniqueidentifier
+		[Column,                                                             ValueConverter(ConverterType = typeof(AccountIdConverter)),          NotNull    ] public AccountId          AccountId          { get; set; } // uniqueidentifier
+		[Column,                                                             ValueConverter(ConverterType = typeof(SecurityIdConverter)),         NotNull    ] public SecurityId         SecurityId         { get; set; } // uniqueidentifier
 		[Column,                                                                                                                                  NotNull    ] public decimal            Shares             { get; set; } // money
 		[Column,                                                                                                                                  NotNull    ] public decimal            Amount             { get; set; } // money
 		[Column(SkipOnInsert=true, SkipOnUpdate=true),                                                                                            NotNull    ] public decimal            PerShare           { get; set; } // money
@@ -208,25 +208,25 @@ namespace Making.Cents.Data.Models
 		/// <summary>
 		/// FK_TransactionItem_Account
 		/// </summary>
-		[Association(ThisKey="AccountId", OtherKey="AccountId", CanBeNull=false, Relationship=Relationship.ManyToOne, KeyName="FK_TransactionItem_Account", BackReferenceName="TransactionItems")]
+		[Association(ThisKey="AccountId", OtherKey="AccountId", CanBeNull=false, Relationship=LinqToDB.Mapping.Relationship.ManyToOne, KeyName="FK_TransactionItem_Account", BackReferenceName="TransactionItems")]
 		public Account Account { get; set; }
 
 		/// <summary>
 		/// FK_TransactionItem_ClearedStatus
 		/// </summary>
-		[Association(ThisKey="ClearedStatusId", OtherKey="ClearedStatusId", CanBeNull=false, Relationship=Relationship.ManyToOne, KeyName="FK_TransactionItem_ClearedStatus", BackReferenceName="TransactionItems")]
+		[Association(ThisKey="ClearedStatusId", OtherKey="ClearedStatusId", CanBeNull=false, Relationship=LinqToDB.Mapping.Relationship.ManyToOne, KeyName="FK_TransactionItem_ClearedStatus", BackReferenceName="TransactionItems")]
 		public EnumTable_ClearedStatus ClearedStatus { get; set; }
 
 		/// <summary>
 		/// FK_TransactionItem_Security
 		/// </summary>
-		[Association(ThisKey="SecurityId", OtherKey="SecurityId", CanBeNull=false, Relationship=Relationship.ManyToOne, KeyName="FK_TransactionItem_Security", BackReferenceName="TransactionItems")]
+		[Association(ThisKey="SecurityId", OtherKey="SecurityId", CanBeNull=false, Relationship=LinqToDB.Mapping.Relationship.ManyToOne, KeyName="FK_TransactionItem_Security", BackReferenceName="TransactionItems")]
 		public Security Security { get; set; }
 
 		/// <summary>
 		/// FK_TransactionItem_Transaction
 		/// </summary>
-		[Association(ThisKey="TransactionId", OtherKey="TransactionId", CanBeNull=false, Relationship=Relationship.ManyToOne, KeyName="FK_TransactionItem_Transaction", BackReferenceName="TransactionItems")]
+		[Association(ThisKey="TransactionId", OtherKey="TransactionId", CanBeNull=false, Relationship=LinqToDB.Mapping.Relationship.ManyToOne, KeyName="FK_TransactionItem_Transaction", BackReferenceName="TransactionItems")]
 		public Transaction Transaction { get; set; }
 
 		#endregion

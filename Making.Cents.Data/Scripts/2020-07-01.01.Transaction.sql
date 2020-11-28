@@ -1,16 +1,16 @@
 ﻿create table Security
 (
-	SecurityId int identity(0,1) not null
+	SecurityId uniqueidentifier not null
 		constraint [PK_Security] primary key,
 	Ticker varchar(50) not null,
 	Name varchar(200) not null,
 );
 
-insert Security values('CASH', 'CASH');
+insert Security values('ca000000-0000-0000-0000-000000000000', 'CASH', 'CASH');
 
 create table SecurityValue
 (
-	SecurityId int not null
+	SecurityId uniqueidentifier not null
 		constraint [FK_SecurityValue_Security]
 		foreign key references Security,
 	[Date] date not null,
@@ -20,11 +20,11 @@ create table SecurityValue
 		primary key (SecurityId, [Date]),
 );
 
-insert SecurityValue values (0, '2000-01-01', 1.00);
+insert SecurityValue values ('ca000000-0000-0000-0000-000000000000', '2000-01-01', 1.00);
 
 create table [Transaction]
 (
-	TransactionId int identity(1,1) not null
+	TransactionId uniqueidentifier not null
 		constraint [PK_Transaction] primary key,
 	[Date] Date not null,
 	Description varchar(255) not null,
@@ -41,14 +41,14 @@ create table ClearedStatus
 
 create table TransactionItem
 (
-	TransactionId int not null
+	TransactionId uniqueidentifier not null
 		constraint [FK_TransactionItem_Transaction]
 		foreign key references [Transaction],
-	TransactionItemId int identity(1,1) not null,
-	AccountId int not null
+	TransactionItemId uniqueidentifier not null,
+	AccountId uniqueidentifier not null
 		constraint [FK_TransactionItem_Account]
 		foreign key references Account,
-	SecurityId int not null
+	SecurityId uniqueidentifier not null
 		constraint [FK_TransactionItem_Security]
 		foreign key references Security,
 	Shares money not null,
@@ -65,7 +65,7 @@ create table TransactionItem
 		primary key (TransactionId, TransactionItemId),
 
 	constraint [CK_TransactionItem_Cash_PerShare]
-		check (SecurityId != 0 or PerShare = 1),
+		check (SecurityId != 'ca000000-0000-0000-0000-000000000000' or PerShare = 1),
 );
 
 create index [IX_TransactionItem_AccountId]

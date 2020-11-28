@@ -16,7 +16,7 @@ namespace Making.Cents.Data.Converters
 		{ }
 	}
 
-	internal class TransactionIdConverter : ValueConverter<TransactionId, int>
+	internal class TransactionIdConverter : ValueConverter<TransactionId, Guid>
 	{
 		public TransactionIdConverter()
 			: base(
@@ -26,7 +26,7 @@ namespace Making.Cents.Data.Converters
 		{ }
 	}
 
-	internal class TransactionItemIdConverter : ValueConverter<TransactionItemId, int>
+	internal class TransactionItemIdConverter : ValueConverter<TransactionItemId, Guid>
 	{
 		public TransactionItemIdConverter()
 			: base(

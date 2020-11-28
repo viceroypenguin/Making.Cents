@@ -16,7 +16,7 @@ create table AccountSubType
 
 create table Account
 (
-	AccountId int identity(1,1) not null
+	AccountId uniqueidentifier not null
 		constraint [PK_Account]
 		primary key,
 	[Name] varchar(1000) not null,

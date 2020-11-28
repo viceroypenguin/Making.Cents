@@ -6,12 +6,12 @@ using Making.Cents.Common.Ids;
 
 namespace Making.Cents.Data.Converters
 {
-	internal class SecurityIdConverter : ValueConverter<SecurityId, int>
+	internal class SecurityIdConverter : ValueConverter<SecurityId, Guid>
 	{
 		public SecurityIdConverter()
 			: base(
 				  v => v.Value,
-				  p => (SecurityId)p,
+				  p => new SecurityId(p),
 				  handlesNulls: false)
 		{ }
 	}

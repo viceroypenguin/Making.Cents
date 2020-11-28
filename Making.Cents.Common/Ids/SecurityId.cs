@@ -4,12 +4,12 @@ using System.Text;
 
 namespace Making.Cents.Common.Ids
 {
-	[StronglyTypedId(backingType: StronglyTypedIdBackingType.Int)]
+	[StronglyTypedId(backingType: StronglyTypedIdBackingType.Guid)]
 	public partial struct SecurityId
 	{
-		public static implicit operator int(SecurityId securityId) =>
+		public static explicit operator Guid(SecurityId securityId) =>
 			securityId.Value;
-		public static explicit operator SecurityId(int securityId) =>
+		public static implicit operator SecurityId(Guid securityId) =>
 			new SecurityId(securityId);
 	}
 }

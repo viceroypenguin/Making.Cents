@@ -5,12 +5,12 @@ using Making.Cents.Common.Enums;
 
 namespace Making.Cents.Common.Ids
 {
-	[StronglyTypedId(backingType: StronglyTypedIdBackingType.Int)]
+	[StronglyTypedId(backingType: StronglyTypedIdBackingType.Guid)]
 	public partial struct TransactionId
 	{
-		public static implicit operator int(TransactionId transactionId) =>
+		public static explicit operator Guid(TransactionId transactionId) =>
 			transactionId.Value;
-		public static explicit operator TransactionId(int transactionId) =>
+		public static implicit operator TransactionId(Guid transactionId) =>
 			new TransactionId(transactionId);
 	}
 
@@ -23,12 +23,12 @@ namespace Making.Cents.Common.Ids
 			new ClearedStatusId((int)clearedStatus);
 	}
 
-	[StronglyTypedId(backingType: StronglyTypedIdBackingType.Int)]
+	[StronglyTypedId(backingType: StronglyTypedIdBackingType.Guid)]
 	public partial struct TransactionItemId
 	{
-		public static implicit operator int(TransactionItemId transactionItemId) =>
+		public static explicit operator Guid(TransactionItemId transactionItemId) =>
 			transactionItemId.Value;
-		public static explicit operator TransactionItemId(int transactionItemId) =>
+		public static implicit operator TransactionItemId(Guid transactionItemId) =>
 			new TransactionItemId(transactionItemId);
 	}
 }

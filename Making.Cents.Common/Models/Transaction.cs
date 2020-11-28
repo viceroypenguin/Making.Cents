@@ -5,12 +5,13 @@ using System.Linq;
 using System.Text;
 using Making.Cents.Common.Enums;
 using Making.Cents.Common.Ids;
+using Making.Cents.Common.Support;
 
 namespace Making.Cents.Common.Models
 {
 	public class Transaction
 	{
-		public TransactionId TransactionId { get; set; }
+		public TransactionId TransactionId { get; set; } = SequentialGuid.Next();
 		public DateTime Date { get; set; }
 		public string Description { get; set; } = string.Empty;
 		public string? Memo { get; set; }

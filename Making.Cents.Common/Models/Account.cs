@@ -2,12 +2,13 @@
 using System.Diagnostics.CodeAnalysis;
 using Making.Cents.Common.Enums;
 using Making.Cents.Common.Ids;
+using Making.Cents.Common.Support;
 
 namespace Making.Cents.Common.Models
 {
 	public class Account
 	{
-		public AccountId AccountId { get; set; }
+		public AccountId AccountId { get; set; } = SequentialGuid.Next();
 		public string Name { get; set; } = string.Empty;
 
 		public AccountType AccountType { get; set; }

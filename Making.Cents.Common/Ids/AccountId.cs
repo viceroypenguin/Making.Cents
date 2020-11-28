@@ -23,12 +23,12 @@ namespace Making.Cents.Common.Ids
 			new AccountSubTypeId((int)subType);
 	}
 
-	[StronglyTypedId(backingType: StronglyTypedIdBackingType.Int)]
+	[StronglyTypedId(backingType: StronglyTypedIdBackingType.Guid)]
 	public partial struct AccountId
 	{
-		public static implicit operator int(AccountId accountId) =>
+		public static explicit operator Guid(AccountId accountId) =>
 			accountId.Value;
-		public static explicit operator AccountId(int accountId) =>
+		public static implicit operator AccountId(Guid accountId) =>
 			new AccountId(accountId);
 	}
 }

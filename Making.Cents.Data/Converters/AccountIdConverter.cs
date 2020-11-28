@@ -26,7 +26,7 @@ namespace Making.Cents.Data.Converters
 		{ }
 	}
 
-	internal class AccountIdConverter : ValueConverter<AccountId, int>
+	internal class AccountIdConverter : ValueConverter<AccountId, Guid>
 	{
 		public AccountIdConverter()
 			: base(

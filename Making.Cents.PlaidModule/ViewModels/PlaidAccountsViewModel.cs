@@ -51,10 +51,10 @@ namespace Making.Cents.PlaidModule.ViewModels
 		public IReadOnlyList<string> PlaidSources { get; }
 		public string? SelectedPlaidSource { get; set; }
 
-		private readonly Dictionary<string, IReadOnlyList<Account>> _accounts =
-			new Dictionary<string, IReadOnlyList<Account>>();
-		public IReadOnlyList<Account> Accounts { get; private set; } =
-			Array.Empty<Account>();
+		private readonly Dictionary<string, IReadOnlyList<AccountViewModel>> _accounts =
+			new Dictionary<string, IReadOnlyList<AccountViewModel>>();
+		public IReadOnlyList<AccountViewModel> Accounts { get; private set; } =
+			Array.Empty<AccountViewModel>();
 		#endregion
 
 		#region Commands
@@ -64,7 +64,7 @@ namespace Making.Cents.PlaidModule.ViewModels
 		[AsyncCommand]
 		public async Task LoadAccounts()
 		{
-			Accounts = Array.Empty<Account>();
+			Accounts = Array.Empty<AccountViewModel>();
 			if (string.IsNullOrWhiteSpace(SelectedPlaidSource))
 				return;
 
@@ -75,17 +75,23 @@ namespace Making.Cents.PlaidModule.ViewModels
 					_accounts[SelectedPlaidSource] = accounts;
 			}
 
-			Accounts = _accounts.GetValueOrDefault(SelectedPlaidSource, Array.Empty<Account>());
+			Accounts = _accounts.GetValueOrDefault(SelectedPlaidSource, Array.Empty<AccountViewModel>());
+		}
+
+		[AsyncCommand]
+		public async Task AddAccount(AccountViewModel avm)
+		{
+			await _accountService.AddAccount(avm.Account);
+			avm.IsCreatedAccount = true;
 		}
 		#endregion
 
 		#region Plaid
-		private Dictionary<string, Account>? _accountsByPlaidId;
+		private Dictionary<string, AccountViewModel>? _accountsByPlaidId;
 
-		public async Task<IReadOnlyList<Account>?> GetPlaidAccounts(string source)
+		private async Task<IReadOnlyList<AccountViewModel>?> GetPlaidAccounts(string source)
 		{
 			_logger.LogInformation("Downloading Accounts for plaid source {source}", source);
-			var dbAccounts = await _accountService.GetDbAccounts();
 
 			_logger.LogTrace("Starting plaid api call.");
 			var plaidAccounts = await _plaidClient
@@ -119,25 +125,37 @@ namespace Making.Cents.PlaidModule.ViewModels
 
 			_logger.LogInformation("Downloaded {count} accounts from Plaid.", plaidAccounts.Accounts.Length);
 			var map = _accountsByPlaidId
-				??= dbAccounts
-					.Where(a => a.PlaidAccountData != null)
-					.ToDictionary(a => a.PlaidAccountData!.AccountId);
+				??= (await _accountService.GetDbAccounts())
+						.Where(a => a.PlaidAccountData != null)
+						.ToDictionary(
+							a => a.PlaidAccountData!.AccountId,
+							a => new AccountViewModel { Account = a, IsCreatedAccount = true, });
 
 			return plaidAccounts
 				.Accounts
 				.Select(a =>
 					map.GetValueOrDefault(a.AccountId)
-					?? new Account
+					?? new AccountViewModel
 					{
-						Name = a.Name,
+						Account = new Account
+						{
+							Name = a.Name,
 
-						AccountType = GetAccountType(a.Type),
-						AccountSubType = GetAccountSubType(a.Type, a.SubType),
+							AccountType = GetAccountType(a.Type),
+							AccountSubType = GetAccountSubType(a.Type, a.SubType),
 
-						PlaidSource = source,
-						PlaidAccountData = a,
+							PlaidSource = source,
+							PlaidAccountData = a,
+						},
+						IsCreatedAccount = false,
 					})
 				.ToArray();
+		}
+
+		public class AccountViewModel : ViewModelBase
+		{
+			public Account Account { get; init; } = null!;
+			public bool IsCreatedAccount { get; set; }
 		}
 
 		#region Translation

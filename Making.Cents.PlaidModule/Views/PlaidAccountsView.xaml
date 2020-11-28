@@ -15,6 +15,10 @@
 		<dx:MessageBoxService/>
 	</dxmvvm:Interaction.Behaviors>
 
+	<Window.Resources>
+		<dxmvvm:BooleanToVisibilityConverter x:Key="InvBoolToVisConverter" Inverse="True" />
+	</Window.Resources>
+	
 	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto" />
@@ -28,14 +32,30 @@
 					  IsEditable="False" />
 		</StackPanel>
 
-		<DataGrid Grid.Row="1"
+		<DataGrid Name="AccountsGrid" Grid.Row="1"
 				  ItemsSource="{Binding Accounts}"
-				  AutoGenerateColumns="False">
+				  AutoGenerateColumns="False"
+				  IsReadOnly="True">
 			<DataGrid.Columns>
-				<DataGridTextColumn Binding="{Binding Name}" Header="Name" />
-				<DataGridTextColumn Binding="{Binding AccountType}" Header="Account Type" />
-				<DataGridTextColumn Binding="{Binding AccountSubType}" Header="Account Sub-Type" />
-				<DataGridTextColumn Binding="{Binding PlaidAccountData.Mask}" Header="Account #" />
+				<DataGridTextColumn Binding="{Binding Account.Name}" Header="Name" />
+				<DataGridTextColumn Binding="{Binding Account.PlaidAccountData.OfficialName}" Header="Plaid Account Name" />
+				<DataGridTextColumn Binding="{Binding Account.AccountType}" Header="Account Type" />
+				<DataGridTextColumn Binding="{Binding Account.AccountSubType}" Header="Account Sub-Type" />
+				<DataGridTextColumn Binding="{Binding Account.PlaidAccountData.Mask}" Header="Account #" />
+				<DataGridTemplateColumn Width="*" MaxWidth="75">
+					<DataGridTemplateColumn.CellTemplate>
+						<DataTemplate>
+							<Grid HorizontalAlignment="Right"
+								  Visibility="{Binding IsCreatedAccount, Converter={StaticResource InvBoolToVisConverter}}">
+								<Button Content="  ...  "
+										ToolTip="Add Account"
+										Command="{Binding DataContext.AddAccountCommand,
+														  ElementName=AccountsGrid}"
+										CommandParameter="{Binding}" />
+							</Grid>
+						</DataTemplate>
+					</DataGridTemplateColumn.CellTemplate>
+				</DataGridTemplateColumn>
 			</DataGrid.Columns>
 		</DataGrid>
 

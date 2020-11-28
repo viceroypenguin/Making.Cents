@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 
 using PlaidAccountType = Going.Plaid.Entity.AccountType;
 using PlaidAccountSubType = Going.Plaid.Entity.AccountSubType;
+using Microsoft.Extensions.Logging;
 
 namespace Making.Cents.Data.Services
 {
@@ -18,10 +19,14 @@ namespace Making.Cents.Data.Services
 	{
 		#region Initialization
 		private readonly Func<DbContext> _context;
+		private readonly ILogger<AccountService> _logger;
 
-		public AccountService(Func<DbContext> context)
+		public AccountService(
+			Func<DbContext> context,
+			ILogger<AccountService> logger)
 		{
 			_context = context;
+			_logger = logger;
 		}
 		#endregion
 
@@ -34,6 +39,7 @@ namespace Making.Cents.Data.Services
 
 			async Task<List<Account>> _()
 			{
+				_logger.LogTrace("Downloading accounts from database.");
 				using (var c = _context())
 				{
 					return await c.Accounts
@@ -86,6 +92,7 @@ namespace Making.Cents.Data.Services
 		public async Task<Account> AddAccount(Account account)
 		{
 			Guard.Argument(account.Name, "account.Name").NotWhiteSpace();
+			_logger.LogTrace("Saving Account {AccountName} (ID: {AccountId})", account.Name, account.AccountId.Value);
 
 			using (var c = _context())
 			{
@@ -93,6 +100,7 @@ namespace Making.Cents.Data.Services
 					.InsertWithOutputAsync(
 						new Data.Models.Account
 						{
+							AccountId = (Guid)account.AccountId,
 							Name = account.Name,
 
 							AccountTypeId = account.AccountType,
@@ -109,6 +117,7 @@ namespace Making.Cents.Data.Services
 
 			_accounts?.Add(account);
 
+			_logger.LogInformation("Saved Account {AccountName} (ID: {AccountId})", account.Name, account.AccountId.Value);
 			return account;
 		}
 
@@ -116,7 +125,7 @@ namespace Making.Cents.Data.Services
 		{
 			using (var c = _context())
 			{
-				await c.Accounts
+				var affectedRows = await c.Accounts
 					.Merge().Using(accounts)
 					.On((dst, src) => dst.AccountId == src.AccountId)
 					.UpdateWhenMatched((dst, src) => new Data.Models.Account
@@ -126,6 +135,8 @@ namespace Making.Cents.Data.Services
 						AccountSubTypeId = src.AccountSubType,
 					})
 					.MergeAsync();
+
+				_logger.LogInformation("Updated accounts. {affectedRows} rows updated.");
 			}
 		}
 

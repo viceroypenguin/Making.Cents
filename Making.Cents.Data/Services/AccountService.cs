@@ -55,6 +55,8 @@ namespace Making.Cents.Data.Services
 							PlaidAccountData = string.IsNullOrWhiteSpace(a.PlaidAccountData)
 								? null
 								: JsonConvert.DeserializeObject<Going.Plaid.Entity.Account>(a.PlaidAccountData),
+
+							ShowOnMainScreen = a.ShowOnMainScreen,
 						})
 						.ToListAsync();
 				}
@@ -89,18 +91,18 @@ namespace Making.Cents.Data.Services
 		#endregion
 
 		#region Save
-		public async Task<Account> AddAccount(Account account)
+		public async Task<Account> Save(Account account)
 		{
 			Guard.Argument(account.Name, "account.Name").NotWhiteSpace();
 			_logger.LogTrace("Saving Account {AccountName} (ID: {AccountId})", account.Name, account.AccountId.Value);
 
 			using (var c = _context())
 			{
-				var dbAccount = await c.Accounts
-					.InsertWithOutputAsync(
+				await c
+					.InsertOrReplaceAsync(
 						new Data.Models.Account
 						{
-							AccountId = (Guid)account.AccountId,
+							AccountId = account.AccountId,
 							Name = account.Name,
 
 							AccountTypeId = account.AccountType,
@@ -110,12 +112,12 @@ namespace Making.Cents.Data.Services
 							PlaidAccountData = account.PlaidAccountData != null
 								? JsonConvert.SerializeObject(account.PlaidAccountData)
 								: null,
-						});
 
-				account.AccountId = dbAccount.AccountId;
+							ShowOnMainScreen = account.ShowOnMainScreen,
+						});
 			}
 
-			_accounts?.Add(account);
+			_accounts = null;
 
 			_logger.LogInformation("Saved Account {AccountName} (ID: {AccountId})", account.Name, account.AccountId.Value);
 			return account;

@@ -83,6 +83,15 @@ namespace Making.Cents.Data
 				.InsertWhenNotMatched(src => new EnumTable_ClearedStatus { ClearedStatusId = src.Value, Name = src.Name, })
 				.DeleteWhenNotMatchedBySource()
 				.Merge();
+
+			this.InsertOrReplace(
+				new Models.Account
+				{
+					AccountId = Making.Cents.Common.Models.Account.UnrealizedGain,
+					Name = "_Unrealized Gain",
+					AccountTypeId = Common.Enums.AccountType.Income,
+					AccountSubTypeId = Common.Enums.AccountSubType.Income,
+				});
 		}
 		#endregion
 

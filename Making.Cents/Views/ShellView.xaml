@@ -23,6 +23,8 @@
 		<Menu Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3">
 			<MenuItem Header="_View Plaid Accounts"
 					  Command="{Binding ViewPlaidAccountsCommand}" />
+			<MenuItem Header="Edit _Accounts"
+					  Command="{Binding EditAccountsCommand}" />
 		</Menu>
 	</Grid>
 </Window>

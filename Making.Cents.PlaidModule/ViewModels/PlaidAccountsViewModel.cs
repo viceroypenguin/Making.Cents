@@ -14,6 +14,7 @@ using PlaidAccountSubType = Going.Plaid.Entity.AccountSubType;
 using PlaidAccountType = Going.Plaid.Entity.AccountType;
 using PlaidOptions = Making.Cents.PlaidModule.Models.PlaidOptions;
 using PlaidLinkWindow = Making.Cents.PlaidModule.Views.PlaidLinkWindow;
+using Making.Cents.Wpf.Common.ViewModels;
 
 namespace Making.Cents.PlaidModule.ViewModels
 {
@@ -51,10 +52,11 @@ namespace Making.Cents.PlaidModule.ViewModels
 		public IReadOnlyList<string> PlaidSources { get; }
 		public string? SelectedPlaidSource { get; set; }
 
-		private readonly Dictionary<string, IReadOnlyList<AccountViewModel>> _accounts =
-			new Dictionary<string, IReadOnlyList<AccountViewModel>>();
+		private readonly Dictionary<string, IReadOnlyList<AccountViewModel>> _accounts = new();
 		public IReadOnlyList<AccountViewModel> Accounts { get; private set; } =
 			Array.Empty<AccountViewModel>();
+
+		public LoadingViewModel LoadingViewModel { get; } = new();
 		#endregion
 
 		#region Commands
@@ -81,7 +83,7 @@ namespace Making.Cents.PlaidModule.ViewModels
 		[AsyncCommand]
 		public async Task AddAccount(AccountViewModel avm)
 		{
-			await _accountService.AddAccount(avm.Account);
+			await _accountService.Save(avm.Account);
 			avm.IsCreatedAccount = true;
 		}
 		#endregion
@@ -146,6 +148,8 @@ namespace Making.Cents.PlaidModule.ViewModels
 
 							PlaidSource = source,
 							PlaidAccountData = a,
+
+							ShowOnMainScreen = true,
 						},
 						IsCreatedAccount = false,
 					})

@@ -5,6 +5,7 @@
         xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
         xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:core="clr-namespace:Making.Cents.Wpf.Common.Views;assembly=Making.Cents.Wpf.Common"
         xmlns:views="clr-namespace:Making.Cents.PlaidModule.Views"
 		xmlns:vm="clr-namespace:Making.Cents.PlaidModule.ViewModels"
         mc:Ignorable="d"
@@ -24,6 +25,8 @@
 			<RowDefinition Height="Auto" />
 			<RowDefinition Height="*" />
 		</Grid.RowDefinitions>
+
+		<core:LoadingView Grid.RowSpan="2" Panel.ZIndex="20" />
 
 		<StackPanel Orientation="Horizontal" Grid.Row="0">
 			<TextBlock Text="Plaid Source:" />

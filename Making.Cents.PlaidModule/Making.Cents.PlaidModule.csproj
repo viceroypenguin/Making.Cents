@@ -26,6 +26,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Making.Cents.Common\Making.Cents.Common.csproj" />
+		<ProjectReference Include="..\Making.Cents.Wpf.Common\Making.Cents.Wpf.Common.csproj" />
 		<ProjectReference Include="..\Making.Cents.Data\Making.Cents.Data.csproj" />
 	</ItemGroup>
 

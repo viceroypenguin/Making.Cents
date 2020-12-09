@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DryIoc;
+using Making.Cents.AccountsModule.ViewModels;
 
 namespace Making.Cents
 {
@@ -11,6 +12,7 @@ namespace Making.Cents
 	{
 		public static Container RegisterAccountModule(this Container container)
 		{
+			container.Register<AccountsEditorViewModel>();
 			return container;
 		}
 	}

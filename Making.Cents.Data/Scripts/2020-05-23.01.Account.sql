@@ -32,6 +32,8 @@ create table Account
 	PlaidAccountData varchar(max) null
 		constraint [CK_Account_PlaidAccountData_IsJson]
 		check (PlaidAccountData is null or isjson(PlaidAccountData) = 1),
+
+	ShowOnMainScreen bit not null,
 );
 
 create unique index [UK_Account_FullName]

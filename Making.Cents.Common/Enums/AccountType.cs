@@ -14,26 +14,26 @@ namespace Making.Cents.Common.Enums
 
 	public enum AccountSubType
 	{
-		Cash = 1,
-		Checking = 2,
-		Savings = 3,
+		Cash = 100,
+		Checking = 101,
+		Savings = 102,
 
-		Brokerage = 4,
-		Retirement = 5,
-		Hsa = 6,
+		Brokerage = 103,
+		Retirement = 104,
+		Hsa = 105,
 
-		House = 7,
-		Vehicle = 8,
-		OtherAsset = 9,
+		House = 106,
+		Vehicle = 107,
+		OtherAsset = 108,
 
-		CreditCard = 10,
-		Loan = 11,
-		Mortgage = 12,
-		Heloc = 13,
-		OtherLiability = 14,
+		CreditCard = 200,
+		Loan = 201,
+		Mortgage = 202,
+		Heloc = 203,
+		OtherLiability = 204,
 
-		Income = 15,
+		Income = 300,
 
-		Expense = 16,
+		Expense = 400,
 	}
 }

@@ -45,6 +45,7 @@ namespace Making.Cents.Data.Models
 		[Column,                                                     ValueConverter(ConverterType = typeof(AccountSubTypeIdConverter)), NotNull] public AccountSubTypeId AccountSubTypeId { get; set; } // int
 		[Column,                                                        Nullable                                                               ] public string           PlaidSource      { get; set; } // varchar(50)
 		[Column,                                                        Nullable                                                               ] public string           PlaidAccountData { get; set; } // varchar(max)
+		[Column,                                                                                                                        NotNull] public bool             ShowOnMainScreen { get; set; } // bit
 
 		#region Associations
 

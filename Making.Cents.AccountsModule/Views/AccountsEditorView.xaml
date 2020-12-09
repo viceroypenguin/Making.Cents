@@ -41,6 +41,9 @@
 
 		<DataGrid Grid.Column="1" Grid.Row="1"
 				  IsReadOnly="True" AutoGenerateColumns="False"
+				  GridLinesVisibility="Horizontal"
+				  RowDetailsVisibilityMode="Collapsed"
+				  HeadersVisibility="Column"
 				  ItemsSource="{Binding Accounts}"
 				  SelectedItem="{Binding SelectedAccount}">
 			<DataGrid.Columns>
@@ -60,48 +63,74 @@
 			  Visibility="{Binding ShowEditor, Converter={StaticResource BoolToVisConverter}}">
 			<Grid DataContext="{Binding EditAccount}">
 				<Grid.RowDefinitions>
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="Auto" />
+					<RowDefinition Height="25" />
+					<RowDefinition Height="25" />
+					<RowDefinition Height="25" />
+					<RowDefinition Height="25" />
+					<RowDefinition Height="25" />
 				</Grid.RowDefinitions>
 				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto" />
 					<ColumnDefinition Width="*" />
-					<ColumnDefinition Width="*" />
-					<ColumnDefinition Width="*" />
+					<ColumnDefinition Width="Auto" />
 					<ColumnDefinition Width="*" />
 				</Grid.ColumnDefinitions>
 
-				<TextBlock Grid.Row="0" Grid.Column="0" Text="Name:" />
-				<TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Text="{Binding Name}" />
+				<TextBlock Grid.Row="0" Grid.Column="0" 
+						   VerticalAlignment="Center"
+						   Text="Name:" />
+				<TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" 
+						 VerticalAlignment="Center"
+						 Text="{Binding Name}" />
 
-				<TextBlock Grid.Row="1" Grid.Column="0" Text="Type:" />
+				<TextBlock Grid.Row="1" Grid.Column="0"
+						   VerticalAlignment="Center"
+						   Text="Type:" />
 				<ComboBox Grid.Row="1" Grid.Column="1"
+						  VerticalAlignment="Center"
 						  ItemsSource="{Binding AccountTypes}"
 						  SelectedItem="{Binding AccountType}"
 						  DisplayMemberPath="Name"
 						  IsEditable="False" />
 
-				<TextBlock Grid.Row="1" Grid.Column="2" Text="Sub-Type:" />
+				<TextBlock Grid.Row="1" Grid.Column="2" 
+						   VerticalAlignment="Center"
+						   Text="Sub-Type:" />
 				<ComboBox Grid.Row="1" Grid.Column="3"
+						  VerticalAlignment="Center"
 						  ItemsSource="{Binding AccountSubTypes}"
 						  SelectedItem="{Binding AccountSubType}"
 						  DisplayMemberPath="Name"
 						  IsEditable="False" />
 
-				<TextBlock Grid.Row="2" Grid.Column="0" Text="Plaid Source:" />
-				<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding PlaidSource}" />
-				<TextBlock Grid.Row="2" Grid.Column="2" Text="Plaid Name:" />
-				<TextBlock Grid.Row="2" Grid.Column="3" Text="{Binding PlaidAccountData.OfficialName}" />
+				<TextBlock Grid.Row="2" Grid.Column="0" 
+						   VerticalAlignment="Center"
+						   Text="Plaid Source:" />
+				<TextBlock Grid.Row="2" Grid.Column="1" 
+						   VerticalAlignment="Center"
+						   Text="{Binding PlaidSource}" />
+				<TextBlock Grid.Row="2" Grid.Column="2" 
+						   VerticalAlignment="Center"
+						   Text="Plaid Name:" />
+				<TextBlock Grid.Row="2" Grid.Column="3" 
+						   VerticalAlignment="Center"
+						   Text="{Binding PlaidAccountData.OfficialName}" />
 
-				<TextBlock Grid.Row="3" Grid.Column="0" Text="Show on main screen:" />
-				<CheckBox Grid.Row="3" Grid.Column="1" IsChecked="{Binding ShowOnMainScreen}" />
+				<TextBlock Grid.Row="3" Grid.Column="0" 
+						   VerticalAlignment="Center"
+						   Text="Show on main screen:" />
+				<CheckBox Grid.Row="3" Grid.Column="1" 
+						  VerticalAlignment="Center"
+						  IsChecked="{Binding ShowOnMainScreen}" />
 
 				<StackPanel Grid.Row="4" Grid.ColumnSpan="4" 
 							Orientation="Horizontal" HorizontalAlignment="Center">
-					<Button Content="Save" Command="{Binding DataContext.SaveCommand, ElementName=AccountEditorGrid}" IsDefault="True" />
-					<Button Content="Cancel" Command="{Binding DataContext.CancelCommand, ElementName=AccountEditorGrid}" IsCancel="True" />
+					<Button Margin="0 0 15 0" VerticalAlignment="Center" Width="50"
+							Content="Save" IsDefault="True" 
+							Command="{Binding DataContext.SaveCommand, ElementName=AccountEditorGrid}" />
+					<Button VerticalAlignment="Center" Width="50"
+							Content="Cancel" IsCancel="True"
+							Command="{Binding DataContext.CancelCommand, ElementName=AccountEditorGrid}" />
 				</StackPanel>
 			</Grid>
 		</Grid>

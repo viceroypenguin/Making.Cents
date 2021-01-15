@@ -1,4 +1,6 @@
 ﻿using System;
+using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -32,10 +34,12 @@ namespace Making.Cents
 				scopeContext: new AsyncExecutionFlowScopeContext());
 			container.RegisterInstanceMany(BuildConfiguration());
 
-			InitializeLogging(container);
+			container.InitializeLogging();
 
 			var logger = container.Resolve<ILoggerFactory>().CreateLogger(typeof(Bootstrapper));
 			logger.LogDebug("Logging initialized");
+
+			container.RegisterConnectionString(args);
 
 			container.RegisterOptions();
 			container.RegisterDataSources();
@@ -172,6 +176,33 @@ namespace Making.Cents
 				.AddJsonFile("appsettings.json", optional: false)
 				.AddJsonFile("appsettings.secrets.json", optional: true)
 				.Build();
+
+		private static void RegisterConnectionString(this Container container, string[] args)
+		{
+			var rootCommand = new RootCommand("A WPF Accounting Software.")
+			{
+				new Option<string?>(
+					"--connection-string-name",
+					getDefaultValue: () => container.GetDefaultConnectionString(),
+					description: "The connection string name to use for data storage."),
+			};
+
+			rootCommand.Handler = CommandHandler.Create<string?>(
+				connectionStringName =>
+				{
+					var connectionString = container.Resolve<IConfigurationRoot>().GetConnectionString(
+						connectionStringName ?? throw new ArgumentNullException(nameof(connectionStringName)));
+					container.RegisterInstance(new DbContextOptions { ConnectionString = connectionString, });
+				});
+
+			rootCommand.Invoke(args);
+		}
+
+		private static string? GetDefaultConnectionString(this Container container)
+		{
+			var configuration = container.Resolve<IConfigurationRoot>();
+			return configuration.GetValue<string?>("DefaultConnectionString");
+		}
 
 		private static void RegisterOptions(this Container container)
 		{

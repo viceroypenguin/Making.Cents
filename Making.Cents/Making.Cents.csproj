@@ -30,6 +30,7 @@
     <PackageReference Include="Serilog.Extensions.Logging" Version="3.*" />
     <PackageReference Include="Serilog.Settings.Configuration" Version="3.*" />
     <PackageReference Include="Serilog.Sinks.Console" Version="3.*" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20574.7" />
     <PackageReference Include="System.Net.Http.Json" Version="5.*" />
   </ItemGroup>
 

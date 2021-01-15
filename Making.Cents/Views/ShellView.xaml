@@ -3,9 +3,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:core="clr-namespace:Making.Cents.Wpf.Common.Views;assembly=Making.Cents.Wpf.Common"
+		xmlns:av="clr-namespace:Making.Cents.AccountsModule.Views;assembly=Making.Cents.AccountsModule"
         xmlns:views="clr-namespace:Making.Cents.Views"
-		xmlns:vm="clr-namespace:Making.Cents.ViewModels"
-        mc:Ignorable="d"
+		xmlns:vm="clr-namespace:Making.Cents.ViewModels" 
+		mc:Ignorable="d"
 		d:DataContext="{d:DesignInstance vm:ShellViewModel}"
         Title="ShellView" Height="450" Width="800">
 	
@@ -26,5 +28,14 @@
 			<MenuItem Header="Edit _Accounts"
 					  Command="{Binding EditAccountsCommand}" />
 		</Menu>
+
+		<core:LoadingView Grid.Row="1" Grid.ColumnSpan="3" />
+
+		<av:MainWindowAccountsListView Grid.Row="1"
+									   DataContext="{Binding MainWindowAccountsListViewModel}"/>
+
+		<GridSplitter Grid.Column="1"
+					  Grid.Row="1"
+					  Width="5" />
 	</Grid>
 </Window>

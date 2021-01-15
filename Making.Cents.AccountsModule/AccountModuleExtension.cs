@@ -13,6 +13,7 @@ namespace Making.Cents
 		public static Container RegisterAccountModule(this Container container)
 		{
 			container.Register<AccountsEditorViewModel>();
+			container.Register<MainWindowAccountsListViewModel>();
 			return container;
 		}
 	}

@@ -106,8 +106,11 @@ namespace Making.Cents.AccountsModule.ViewModels
 		}
 
 		[Command]
-		public void Cancel() =>
+		public void Cancel()
+		{
 			SelectedAccount = null;
+			EditAccount = null;
+		}
 		#endregion
 
 		public class AccountViewModel : ViewModelBase

@@ -10,6 +10,7 @@ namespace Making.Cents.Common.Enums
 		Liability = 2,
 		Income = 3,
 		Expense = 4,
+		Equity = 5,
 	}
 
 	public enum AccountSubType
@@ -35,5 +36,7 @@ namespace Making.Cents.Common.Enums
 		Income = 300,
 
 		Expense = 400,
+
+		Capital = 500,
 	}
 }

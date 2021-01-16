@@ -30,5 +30,10 @@ namespace Making.Cents.Wpf.Common.Views
 		{
 			InitializeComponent();
 		}
+
+		private void CancelButton_Click(object sender, RoutedEventArgs e) => 
+			(DataContext as IUsesLoadingViewModel)
+				?.LoadingViewModel
+				.Cancel();
 	}
 }

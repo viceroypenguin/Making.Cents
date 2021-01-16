@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DevExpress.Mvvm;
+using DevExpress.Mvvm.DataAnnotations;
 
 namespace Making.Cents.Wpf.Common.ViewModels
 {
@@ -11,6 +12,11 @@ namespace Making.Cents.Wpf.Common.ViewModels
 	{
 		public string? Message { get; set; }
 		public bool IsLoading { get; set; }
+		public bool Cancellable { get; private set; }
+
+		public bool IsIndeterminate => true;
+		public int Progress => 0;
+		public string ProgressText => string.Empty;
 
 		public IDisposable Wait(string? message)
 		{
@@ -37,5 +43,8 @@ namespace Making.Cents.Wpf.Common.ViewModels
 			public void Dispose() =>
 				_endWait();
 		}
+
+		[Command]
+		public void Cancel() { }
 	}
 }

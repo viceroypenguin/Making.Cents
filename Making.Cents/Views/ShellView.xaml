@@ -9,12 +9,12 @@
 		xmlns:vm="clr-namespace:Making.Cents.ViewModels" 
 		mc:Ignorable="d"
 		d:DataContext="{d:DesignInstance vm:ShellViewModel}"
-        Title="ShellView" Height="450" Width="800">
+        Title="ShellView" Height="500" Width="1000">
 	
     <Grid>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="*" />
-			<ColumnDefinition Width="10" />
+			<ColumnDefinition Width="5" />
 			<ColumnDefinition Width="4*" />
 		</Grid.ColumnDefinitions>
 		<Grid.RowDefinitions>
@@ -34,8 +34,9 @@
 		<av:MainWindowAccountsListView Grid.Row="1"
 									   DataContext="{Binding MainWindowAccountsListViewModel}"/>
 
-		<GridSplitter Grid.Column="1"
-					  Grid.Row="1"
-					  Width="5" />
+		<GridSplitter Grid.Column="1" Grid.Row="1"
+					  Width="5"
+					  VerticalAlignment="Stretch"
+					  HorizontalAlignment="Center" />
 	</Grid>
 </Window>

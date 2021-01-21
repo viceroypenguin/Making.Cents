@@ -24,7 +24,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.*" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.*" />
 		<PackageReference Include="Microsoft.Extensions.Options" Version="5.*" />
-		<PackageReference Include="morelinq" Version="3.*" />
+		<PackageReference Include="morelinq.temp" Version="3.*" />
     <PackageReference Include="PropertyChanged.Fody" Version="3.*" PrivateAssets="All" />
     <PackageReference Include="Serilog" Version="2.*" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="3.*" />
@@ -32,6 +32,7 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="3.*" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20574.7" />
     <PackageReference Include="System.Net.Http.Json" Version="5.*" />
+		<PackageReference Include="WPFChromeTabsMVVM" Version="1.*" />
   </ItemGroup>
 
   <ItemGroup>

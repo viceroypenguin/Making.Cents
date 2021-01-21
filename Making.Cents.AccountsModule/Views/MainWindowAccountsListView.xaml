@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+			 xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
              xmlns:views="clr-namespace:Making.Cents.AccountsModule.Views"
 			 xmlns:vm="clr-namespace:Making.Cents.AccountsModule.ViewModels"
              mc:Ignorable="d" 
@@ -13,16 +14,19 @@
 
 		<DataGrid ItemsSource="{Binding Accounts}"
 				  SelectionMode="Single"
+				  SelectedItem="{Binding SelectedAccount}"
 				  AutoGenerateColumns="False"
 				  GridLinesVisibility="None"
 				  AlternatingRowBackground="LightGray"
-				  HeadersVisibility="None">
-			
+				  HeadersVisibility="None"
+				  IsReadOnly="True">
+
 			<DataGrid.Columns>
 				<DataGridTextColumn Binding="{Binding Name}"
 									Width="*" />
 				
-				<DataGridTextColumn Binding="{Binding Balance, StringFormat={}{0:C}}">
+				<DataGridTextColumn Binding="{Binding Balance, StringFormat={}{0:C}}"
+									Width="75">
 					<DataGridTextColumn.ElementStyle>
 						<Style TargetType="{x:Type TextBlock}">
 							<Setter Property="HorizontalAlignment" Value="Right" />
@@ -30,6 +34,7 @@
 					</DataGridTextColumn.ElementStyle>
 				</DataGridTextColumn>
 			</DataGrid.Columns>
+			
 		</DataGrid>
             
     </Grid>

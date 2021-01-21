@@ -234,6 +234,7 @@ namespace Making.Cents
 		private static void RegisterServices(this Container container)
 		{
 			container.Register<AccountService>(Reuse.Singleton);
+			container.Register<TransactionService>(Reuse.Singleton);
 		}
 
 		private static void RegisterViewModels(this Container container)
@@ -241,7 +242,7 @@ namespace Making.Cents
 			container.RegisterAccountModule();
 			container.RegisterPlaidModule();
 
-			container.Register<ShellViewModel>(Reuse.Singleton);
+			container.RegisterMany<ShellViewModel>(Reuse.Singleton);
 		}
 
 		private static void InitializeDatabase(Container container)

@@ -3,15 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Dawn;
-using Going.Plaid;
 using LinqToDB;
-using Making.Cents.Common.Enums;
 using Making.Cents.Common.Models;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 using PlaidAccountType = Going.Plaid.Entity.AccountType;
 using PlaidAccountSubType = Going.Plaid.Entity.AccountSubType;
-using Microsoft.Extensions.Logging;
 
 namespace Making.Cents.Data.Services
 {
@@ -19,11 +17,11 @@ namespace Making.Cents.Data.Services
 	{
 		#region Initialization
 		private readonly Func<DbContext> _context;
-		private readonly ILogger<AccountService> _logger;
+		private readonly ILogger _logger;
 
 		public AccountService(
 			Func<DbContext> context,
-			ILogger<AccountService> logger)
+			ILogger logger)
 		{
 			_context = context;
 			_logger = logger;

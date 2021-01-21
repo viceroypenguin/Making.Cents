@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:ct="clr-namespace:ChromeTabs;assembly=ChromeTabs"
 		xmlns:core="clr-namespace:Making.Cents.Wpf.Common.Views;assembly=Making.Cents.Wpf.Common"
 		xmlns:av="clr-namespace:Making.Cents.AccountsModule.Views;assembly=Making.Cents.AccountsModule"
         xmlns:views="clr-namespace:Making.Cents.Views"
@@ -38,5 +39,11 @@
 					  Width="5"
 					  VerticalAlignment="Stretch"
 					  HorizontalAlignment="Center" />
+
+		<ct:ChromeTabControl Grid.Column="2" Grid.Row="1"
+							 ItemsSource="{Binding Tabs}"
+							 SelectedItem="{Binding CurrentTab}"
+							 DisplayMemberPath="Title"
+							 CloseTabCommand="{Binding CloseTabCommand}"/>
 	</Grid>
 </Window>

@@ -60,7 +60,7 @@ namespace Making.Cents
 				{
 					foreach (var security in qif.Stocks.Where(s => s.Name != "CASH"))
 					{
-						security.StockId =
+						security.SecurityId =
 							context.Securities
 								.InsertWithOutput(new Data.Models.Security
 								{
@@ -71,7 +71,7 @@ namespace Making.Cents
 					}
 
 					var tickerMap = qif.Stocks
-						.ToDictionary(x => x.Ticker, x => x.StockId);
+						.ToDictionary(x => x.Ticker, x => x.SecurityId);
 
 					foreach (var account in qif.Accounts)
 					{
@@ -105,7 +105,7 @@ namespace Making.Cents
 							{
 								TransactionId = t.TransactionId,
 								AccountId = ti.Account!.AccountId,
-								SecurityId = ti.Stock?.StockId ?? ti.StockId,
+								SecurityId = ti.Security?.SecurityId ?? ti.SecurityId,
 								Amount = ti.Amount,
 								Shares = ti.Shares,
 								Memo = ti.Memo,
@@ -122,6 +122,8 @@ namespace Making.Cents
 				}
 			}
 #endif
+
+			InitializeSystem(container);
 
 			var vm = container.Resolve<ShellViewModel>();
 
@@ -234,6 +236,7 @@ namespace Making.Cents
 		private static void RegisterServices(this Container container)
 		{
 			container.Register<AccountService>(Reuse.Singleton);
+			container.Register<SecurityService>(Reuse.Singleton);
 			container.Register<TransactionService>(Reuse.Singleton);
 		}
 
@@ -250,5 +253,13 @@ namespace Making.Cents
 			using (var context = container.Resolve<DbContext>())
 				context.InitializeDatabase();
 		}
+
+		private static void InitializeSystem(Container container) => 
+			Task.Run(async () =>
+			{
+				await container.Resolve<AccountService>().InitializeAsync();
+				await container.Resolve<SecurityService>().InitializeAsync();
+				await container.Resolve<TransactionService>().InitializeAsync();
+			}).Wait();
 	}
 }

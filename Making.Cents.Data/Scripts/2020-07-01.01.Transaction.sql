@@ -59,7 +59,7 @@ create table TransactionItem
 		constraint [FK_TransactionItem_ClearedStatus]
 		foreign key references ClearedStatus,
 	Memo varchar(250) null,
-	PlaidTransactionId varchar(50) null,
+	PlaidTransactionData varchar(50) null,
 
 	constraint [PK_TransactionItem] 
 		primary key (TransactionId, TransactionItemId),

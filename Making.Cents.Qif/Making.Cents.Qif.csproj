@@ -10,7 +10,7 @@
 
 	<ItemGroup>
 	  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.*" />
-	  <PackageReference Include="morelinq" Version="3.*" />
+	  <PackageReference Include="morelinq.temp" Version="3.*" />
 	</ItemGroup>
 
 	<ItemGroup>

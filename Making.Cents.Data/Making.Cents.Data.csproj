@@ -17,8 +17,9 @@
 		<PackageReference Include="Microsoft.Data.SqlClient" Version="2.*" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="5.*" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.*" />
-    <PackageReference Include="morelinq" Version="3.*" />
+    <PackageReference Include="morelinq.temp" Version="3.*" />
     <PackageReference Include="Newtonsoft.Json" Version="12.*" />
+    <PackageReference Include="System.Linq.Async" Version="5.*" />
     <PackageReference Include="System.Net.Http.Json" Version="5.*" />
 	</ItemGroup>
 

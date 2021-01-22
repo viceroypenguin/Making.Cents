@@ -31,9 +31,9 @@ namespace Making.Cents.AccountsModule.ViewModels
 			SelectedAccountType = AccountTypes[0];
 		}
 
-		public async Task InitializeAsync()
+		public void Initialize()
 		{
-			var accounts = await _accountService.GetDbAccounts();
+			var accounts = _accountService.GetAccounts();
 			_accountsByType = accounts
 				.ToLookup(a => a.AccountType)
 				.ToDictionary(

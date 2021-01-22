@@ -26,16 +26,16 @@ namespace Making.Cents.Common.Models
 	{
 		public TransactionItemId TransactionItemId { get; set; }
 		public AccountId AccountId { get; set; }
-		public SecurityId StockId { get; set; }
+		public SecurityId SecurityId { get; set; }
 		public decimal Shares { get; set; }
 		public decimal Amount { get; set; }
-		public decimal PerShare => Amount / Shares;
+		public decimal PerShare => Math.Round(Amount / Shares, 4);
 
 		public ClearedStatus ClearedStatus { get; set; }
 		public string? Memo { get; set; }
-		public string? PlaidTransactionId { get; set; }
+		public string? PlaidTransactionData { get; set; }
 
 		[DisallowNull] public Account? Account { get; set; }
-		[DisallowNull] public Security? Stock { get; set; }
+		[DisallowNull] public Security? Security { get; set; }
 	}
 }

@@ -24,10 +24,10 @@ namespace Making.Cents.AccountsModule.ViewModels
 			_accountRegisterService = accountRegisterService;
 		}
 
-		public async Task InitializeAsync()
+		public void Initialize()
 		{
 			using (LoadingViewModel.Wait("Loading accounts..."))
-				Accounts = (await _accountService.GetDbAccounts())
+				Accounts = _accountService.GetAccounts()
 					.Where(a => a.ShowOnMainScreen)
 					.ToArray();
 		}

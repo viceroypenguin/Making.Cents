@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 
 using LinqToDB;
+using LinqToDB.Configuration;
 using LinqToDB.Mapping;
 
 using Making.Cents.Common.Ids;
@@ -193,16 +194,16 @@ namespace Making.Cents.Data.Models
 	[Table(Schema="dbo", Name="TransactionItem")]
 	public partial class TransactionItem
 	{
-		[ValueConverter(ConverterType = typeof(TransactionIdConverter)),     PrimaryKey(1),                                                       NotNull    ] public TransactionId      TransactionId      { get; set; } // uniqueidentifier
-		[ValueConverter(ConverterType = typeof(TransactionItemIdConverter)), PrimaryKey(2),                                                       NotNull    ] public TransactionItemId  TransactionItemId  { get; set; } // uniqueidentifier
-		[Column,                                                             ValueConverter(ConverterType = typeof(AccountIdConverter)),          NotNull    ] public AccountId          AccountId          { get; set; } // uniqueidentifier
-		[Column,                                                             ValueConverter(ConverterType = typeof(SecurityIdConverter)),         NotNull    ] public SecurityId         SecurityId         { get; set; } // uniqueidentifier
-		[Column,                                                                                                                                  NotNull    ] public decimal            Shares             { get; set; } // money
-		[Column,                                                                                                                                  NotNull    ] public decimal            Amount             { get; set; } // money
-		[Column(SkipOnInsert=true, SkipOnUpdate=true),                                                                                            NotNull    ] public decimal            PerShare           { get; set; } // money
-		[Column,                                                             ValueConverter(ConverterType = typeof(ClearedStatusIdConverter)),    NotNull    ] public ClearedStatusId    ClearedStatusId    { get; set; } // int
-		[Column,                                                                                                                                     Nullable] public string             Memo               { get; set; } // varchar(250)
-		[Column,                                                             ValueConverter(ConverterType = typeof(PlaidTransactionIdConverter)),    Nullable] public PlaidTransactionId PlaidTransactionId { get; set; } // varchar(50)
+		[ValueConverter(ConverterType = typeof(TransactionIdConverter)),     PrimaryKey(1),                                                    NotNull] public TransactionId     TransactionId        { get; set; } // uniqueidentifier
+		[ValueConverter(ConverterType = typeof(TransactionItemIdConverter)), PrimaryKey(2),                                                    NotNull] public TransactionItemId TransactionItemId    { get; set; } // uniqueidentifier
+		[Column,                                                             ValueConverter(ConverterType = typeof(AccountIdConverter)),       NotNull] public AccountId         AccountId            { get; set; } // uniqueidentifier
+		[Column,                                                             ValueConverter(ConverterType = typeof(SecurityIdConverter)),      NotNull] public SecurityId        SecurityId           { get; set; } // uniqueidentifier
+		[Column,                                                                                                                               NotNull] public decimal           Shares               { get; set; } // money
+		[Column,                                                                                                                               NotNull] public decimal           Amount               { get; set; } // money
+		[Column(SkipOnInsert=true, SkipOnUpdate=true),                                                                                         NotNull] public decimal           PerShare             { get; set; } // money
+		[Column,                                                             ValueConverter(ConverterType = typeof(ClearedStatusIdConverter)), NotNull] public ClearedStatusId   ClearedStatusId      { get; set; } // int
+		[Column,                                                                Nullable                                                              ] public string            Memo                 { get; set; } // varchar(250)
+		[Column,                                                                Nullable                                                              ] public string            PlaidTransactionData { get; set; } // varchar(50)
 
 		#region Associations
 

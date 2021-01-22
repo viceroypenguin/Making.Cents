@@ -30,9 +30,8 @@ namespace Making.Cents.AccountsModule.Services
 				accountId,
 				_ => _newAccountRegisterViewModel());
 
+			vm.Initialize(accountId);
 			_mainWindow.Value.NavigateTab(vm);
-
-			_ = vm.InitializeAsync(accountId);
 		}
 	}
 }

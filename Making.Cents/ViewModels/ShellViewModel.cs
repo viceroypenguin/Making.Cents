@@ -30,7 +30,7 @@ namespace Making.Cents.ViewModels
 
 		public Task InitializeAsync()
 		{
-			_ = MainWindowAccountsListViewModel.InitializeAsync();
+			MainWindowAccountsListViewModel.Initialize();
 			using (LoadingViewModel.Wait("Loading Accounts..."))
 				return Task.CompletedTask;
 		}
@@ -59,7 +59,7 @@ namespace Making.Cents.ViewModels
 		public void EditAccounts()
 		{
 			var vm = _newAccountsEditorViewModel();
-			_ = vm.InitializeAsync();
+			vm.Initialize();
 
 			var aView = new AccountsEditorView
 			{

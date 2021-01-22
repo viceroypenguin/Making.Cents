@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 
 using PlaidAccountType = Going.Plaid.Entity.AccountType;
 using PlaidAccountSubType = Going.Plaid.Entity.AccountSubType;
+using Making.Cents.Common.Ids;
 
 namespace Making.Cents.Data.Services
 {
@@ -26,66 +27,41 @@ namespace Making.Cents.Data.Services
 			_context = context;
 			_logger = logger;
 		}
+
+		private Dictionary<AccountId, Account> _accounts = null!;
+
+		public async Task InitializeAsync()
+		{
+			_logger.LogTrace("Downloading accounts from database.");
+			using (var c = _context())
+			{
+				_accounts = await c.Accounts
+					.Select(a => new Account
+					{
+						AccountId = a.AccountId,
+						Name = a.Name,
+
+						AccountType = a.AccountTypeId,
+						AccountSubType = a.AccountSubTypeId,
+
+						PlaidSource = a.PlaidSource,
+						PlaidAccountData = string.IsNullOrWhiteSpace(a.PlaidAccountData)
+							? null
+							: JsonConvert.DeserializeObject<Going.Plaid.Entity.Account>(a.PlaidAccountData),
+
+						ShowOnMainScreen = a.ShowOnMainScreen,
+					})
+					.ToDictionaryAsync(a => a.AccountId);
+			}
+		}
 		#endregion
 
 		#region Query
-		private List<Account>? _accounts;
+		public IEnumerable<Account> GetAccounts() =>
+			_accounts.Values;
 
-		public async ValueTask<IReadOnlyList<Account>> GetDbAccounts()
-		{
-			return _accounts ??= await _();
-
-			async Task<List<Account>> _()
-			{
-				_logger.LogTrace("Downloading accounts from database.");
-				using (var c = _context())
-				{
-					return await c.Accounts
-						.Select(a => new Account
-						{
-							AccountId = a.AccountId,
-							Name = a.Name,
-
-							AccountType = a.AccountTypeId,
-							AccountSubType = a.AccountSubTypeId,
-
-							PlaidSource = a.PlaidSource,
-							PlaidAccountData = string.IsNullOrWhiteSpace(a.PlaidAccountData)
-								? null
-								: JsonConvert.DeserializeObject<Going.Plaid.Entity.Account>(a.PlaidAccountData),
-
-							ShowOnMainScreen = a.ShowOnMainScreen,
-						})
-						.ToListAsync();
-				}
-			}
-		}
-
-		public async Task<IReadOnlyList<Account>> GetAccountBalances(DateTime date)
-		{
-			using (var c = _context())
-				return await (
-					from t in c.Transactions
-					where t.Date < date
-					from ti in c.TransactionItems.Where(ti => ti.TransactionId == t.TransactionId)
-					from a in c.Accounts.Where(a => a.AccountId == ti.AccountId)
-					from sv in c.SecurityValues
-						.Where(sv => sv.SecurityId == ti.SecurityId)
-						.Where(sv => sv.Date < date)
-						.OrderByDescending(sv => sv.Date)
-						.Take(1)
-					group ti.Shares * sv.Value by a into x
-					select new Account
-					{
-						AccountId = x.Key.AccountId,
-						Name = x.Key.Name,
-						AccountType = x.Key.AccountTypeId,
-						AccountSubType = x.Key.AccountSubTypeId,
-
-						Balance = x.Sum(),
-					})
-					.ToListAsync();
-		}
+		public Account GetAccount(AccountId accountId) =>
+			_accounts[accountId];
 		#endregion
 
 		#region Save
@@ -115,13 +91,13 @@ namespace Making.Cents.Data.Services
 						});
 			}
 
-			_accounts = null;
+			_accounts[account.AccountId] = account;
 
 			_logger.LogInformation("Saved Account {AccountName} (ID: {AccountId})", account.Name, account.AccountId.Value);
 			return account;
 		}
 
-		public async Task UpdateAccounts(IEnumerable<Account> accounts)
+		public async Task UpdateAccounts(IReadOnlyCollection<Account> accounts)
 		{
 			using (var c = _context())
 			{
@@ -137,6 +113,13 @@ namespace Making.Cents.Data.Services
 					.MergeAsync();
 
 				_logger.LogInformation("Updated accounts. {affectedRows} rows updated.");
+			}
+
+			foreach (var a in accounts)
+			{
+				_accounts[a.AccountId].Name = a.Name;
+				_accounts[a.AccountId].AccountType = a.AccountType;
+				_accounts[a.AccountId].AccountSubType = a.AccountSubType;
 			}
 		}
 

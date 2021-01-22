@@ -127,7 +127,7 @@ namespace Making.Cents.PlaidModule.ViewModels
 
 			_logger.LogInformation("Downloaded {count} accounts from Plaid.", plaidAccounts.Accounts.Length);
 			var map = _accountsByPlaidId
-				??= (await _accountService.GetDbAccounts())
+				??= _accountService.GetAccounts()
 						.Where(a => a.PlaidAccountData != null)
 						.ToDictionary(
 							a => a.PlaidAccountData!.AccountId,

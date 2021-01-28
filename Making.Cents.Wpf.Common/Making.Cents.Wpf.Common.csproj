@@ -3,6 +3,10 @@
 	<Import Project="../Common.props" />
 
 	<ItemGroup>
+		<PackageReference Include="boilerplatezero" Version="1.*">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 		<PackageReference Include="DevExpressMvvm" Version="20.*" />
 		<PackageReference Include="DryIoc.dll" Version="4.*" />
 		<PackageReference Include="Fody" Version="6.*">

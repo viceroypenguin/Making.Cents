@@ -13,6 +13,8 @@
 		<EnableNETAnalyzers>false</EnableNETAnalyzers>
 		<RunAnalyzers>false</RunAnalyzers>
 		<AnalysisMode>Default</AnalysisMode>
+	
+		<IncludePackageReferencesDuringMarkupCompilation>true</IncludePackageReferencesDuringMarkupCompilation>
 	</PropertyGroup>
 
 	<PropertyGroup Condition=" '$(Configuration)' == 'Release' ">

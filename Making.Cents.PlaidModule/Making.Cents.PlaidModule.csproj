@@ -1,15 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFramework>net5.0-windows</TargetFramework>
-		<Nullable>enable</Nullable>
-		<LangVersion>latest</LangVersion>
-		<AnalysisLevel>latest</AnalysisLevel>
-
-		<UseWPF>true</UseWPF>
-
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-	</PropertyGroup>
+	<Import Project="../Common.props" />
 
 	<ItemGroup>
 		<PackageReference Include="Going.Plaid" Version="2.*" />

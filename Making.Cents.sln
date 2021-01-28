@@ -8,6 +8,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8E283A96-466B-4030-A58A-5D6E722D253B}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		Common.props = Common.props
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Making.Cents.Data", "Making.Cents.Data\Making.Cents.Data.csproj", "{05ADAE6E-B7D0-4E7B-B588-2CEBC73DD7B3}"
@@ -28,7 +29,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Making.Cents.Qif", "Making.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Making.Cents.PlaidModule", "Making.Cents.PlaidModule\Making.Cents.PlaidModule.csproj", "{B9D13573-BC87-45FE-B61C-BFECA6A8B067}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Making.Cents.Wpf.Common", "Making.Cents.Wpf.Common\Making.Cents.Wpf.Common.csproj", "{48CFC3E9-FC11-493B-ABCD-1604DFF75D56}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Making.Cents.Wpf.Common", "Making.Cents.Wpf.Common\Making.Cents.Wpf.Common.csproj", "{48CFC3E9-FC11-493B-ABCD-1604DFF75D56}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

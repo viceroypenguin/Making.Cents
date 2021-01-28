@@ -1,13 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
-		<Nullable>enable</Nullable>
-		<LangVersion>latest</LangVersion>
-		<AnalysisLevel>latest</AnalysisLevel>
-
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-  </PropertyGroup>
+	<Import Project="../Common.props" />
 
 	<ItemGroup>
 		<PackageReference Include="Going.Plaid" Version="2.*" />
@@ -18,5 +11,5 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 		</PackageReference>
 	</ItemGroup>
-	
+
 </Project>

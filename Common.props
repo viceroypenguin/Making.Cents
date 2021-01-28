@@ -1,0 +1,23 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+		<TargetFramework>net5.0-windows10.0.19041.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<LangVersion>latest</LangVersion>
+		<AnalysisLevel>preview</AnalysisLevel>
+
+		<UseWPF>true</UseWPF>
+
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+
+		<EnableNETAnalyzers>false</EnableNETAnalyzers>
+		<RunAnalyzers>false</RunAnalyzers>
+		<AnalysisMode>Default</AnalysisMode>
+	</PropertyGroup>
+
+	<PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+		<EnableNETAnalyzers>true</EnableNETAnalyzers>
+		<RunAnalyzers>true</RunAnalyzers>
+		<AnalysisMode>AllEnabledByDefault</AnalysisMode>	
+	</PropertyGroup>
+</Project>

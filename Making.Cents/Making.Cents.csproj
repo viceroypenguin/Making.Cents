@@ -1,15 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-		<TargetFramework>net5.0-windows</TargetFramework>
-		<Nullable>enable</Nullable>
-		<LangVersion>latest</LangVersion>
-		<AnalysisLevel>latest</AnalysisLevel>
-
+	<Import Project="../Common.props" />
+	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<UseWPF>true</UseWPF>
-
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 	</PropertyGroup>
 
   <ItemGroup>

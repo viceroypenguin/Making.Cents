@@ -13,6 +13,7 @@ namespace Making.Cents.Common.Models
 	{
 		public TransactionId TransactionId { get; set; } = SequentialGuid.Next();
 		public DateTime Date { get; set; }
+		public TransactionType TransactionType { get; set; }
 		public string Description { get; set; } = string.Empty;
 		public string? Memo { get; set; }
 

@@ -84,6 +84,13 @@ namespace Making.Cents.Data
 				.DeleteWhenNotMatchedBySource()
 				.Merge();
 
+			TransactionTypes
+				.Merge().Using(Enums.GetMembers<Common.Enums.TransactionType>())
+				.On((dst, src) => dst.TransactionTypeId == src.Value)
+				.InsertWhenNotMatched(src => new EnumTable_TransactionType { TransactionTypeId = src.Value, Name = src.Name, })
+				.DeleteWhenNotMatchedBySource()
+				.Merge();
+
 			this.InsertOrReplace(
 				new Models.Account
 				{

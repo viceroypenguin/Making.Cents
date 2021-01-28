@@ -22,11 +22,22 @@ create table SecurityValue
 
 insert SecurityValue values ('ca000000-0000-0000-0000-000000000000', '2000-01-01', 1.00);
 
+create table TransactionType
+(
+	TransactionTypeId int not null
+		constraint [PK_TransactionType]
+		primary key,
+	Name varchar(50),
+);
+
 create table [Transaction]
 (
 	TransactionId uniqueidentifier not null
 		constraint [PK_Transaction] primary key,
 	[Date] Date not null,
+	TransactionTypeId int not null
+		constraint [FK_Transaction_TransactionType]
+		foreign key references TransactionType,
 	Description varchar(255) not null,
 	Memo varchar(255) null,
 );

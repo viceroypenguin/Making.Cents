@@ -34,6 +34,7 @@
 		GetTable("AccountType").TypeName = "EnumTable_AccountType";
 		GetTable("AccountSubType").TypeName = "EnumTable_AccountSubType";
 		GetTable("ClearedStatus").TypeName = "EnumTable_ClearedStatus";
+		GetTable("TransactionType").TypeName = "EnumTable_TransactionType";
 
 		foreach (var t in Tables.Values)
 			foreach (var c in t.Columns.Values.Where(c => c.ColumnName.EndsWith("Id")))

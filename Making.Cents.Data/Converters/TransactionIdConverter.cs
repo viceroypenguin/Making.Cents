@@ -16,6 +16,16 @@ namespace Making.Cents.Data.Converters
 		{ }
 	}
 
+	internal class TransactionTypeIdConverter : ValueConverter<TransactionTypeId, int>
+	{
+		public TransactionTypeIdConverter()
+			: base(
+				  v => v.Value,
+				  p => new TransactionTypeId(p),
+				  handlesNulls: false)
+		{ }
+	}
+
 	internal class TransactionIdConverter : ValueConverter<TransactionId, Guid>
 	{
 		public TransactionIdConverter()

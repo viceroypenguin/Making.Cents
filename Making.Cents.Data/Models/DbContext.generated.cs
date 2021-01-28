@@ -22,16 +22,17 @@ namespace Making.Cents.Data
 	using Models;
 	public partial class DbContext : LinqToDB.Data.DataConnection
 	{
-		public ITable<Account>                  Accounts            { get { return this.GetTable<Account>(); } }
-		public ITable<EnumTable_AccountSubType> AccountSubTypes     { get { return this.GetTable<EnumTable_AccountSubType>(); } }
-		public ITable<EnumTable_AccountType>    AccountTypes        { get { return this.GetTable<EnumTable_AccountType>(); } }
-		public ITable<EnumTable_ClearedStatus>  ClearedStatus       { get { return this.GetTable<EnumTable_ClearedStatus>(); } }
-		public ITable<Security>                 Securities          { get { return this.GetTable<Security>(); } }
-		public ITable<SecurityValue>            SecurityValues      { get { return this.GetTable<SecurityValue>(); } }
-		public ITable<Transaction>              Transactions        { get { return this.GetTable<Transaction>(); } }
-		public ITable<TransactionBalance>       TransactionBalances { get { return this.GetTable<TransactionBalance>(); } }
-		public ITable<TransactionItem>          TransactionItems    { get { return this.GetTable<TransactionItem>(); } }
-		public ITable<VersionHistory>           VersionHistories    { get { return this.GetTable<VersionHistory>(); } }
+		public ITable<Account>                   Accounts            { get { return this.GetTable<Account>(); } }
+		public ITable<EnumTable_AccountSubType>  AccountSubTypes     { get { return this.GetTable<EnumTable_AccountSubType>(); } }
+		public ITable<EnumTable_AccountType>     AccountTypes        { get { return this.GetTable<EnumTable_AccountType>(); } }
+		public ITable<EnumTable_ClearedStatus>   ClearedStatus       { get { return this.GetTable<EnumTable_ClearedStatus>(); } }
+		public ITable<EnumTable_TransactionType> TransactionTypes    { get { return this.GetTable<EnumTable_TransactionType>(); } }
+		public ITable<Security>                  Securities          { get { return this.GetTable<Security>(); } }
+		public ITable<SecurityValue>             SecurityValues      { get { return this.GetTable<SecurityValue>(); } }
+		public ITable<Transaction>               Transactions        { get { return this.GetTable<Transaction>(); } }
+		public ITable<TransactionBalance>        TransactionBalances { get { return this.GetTable<TransactionBalance>(); } }
+		public ITable<TransactionItem>           TransactionItems    { get { return this.GetTable<TransactionItem>(); } }
+		public ITable<VersionHistory>            VersionHistories    { get { return this.GetTable<VersionHistory>(); } }
 	}
 }
 
@@ -122,6 +123,23 @@ namespace Making.Cents.Data.Models
 		#endregion
 	}
 
+	[Table(Schema="dbo", Name="TransactionType")]
+	public partial class EnumTable_TransactionType
+	{
+		[ValueConverter(ConverterType = typeof(TransactionTypeIdConverter)), PrimaryKey,  NotNull] public TransactionTypeId TransactionTypeId { get; set; } // int
+		[Column,                                                                Nullable         ] public string            Name              { get; set; } // varchar(50)
+
+		#region Associations
+
+		/// <summary>
+		/// FK_Transaction_TransactionType_BackReference
+		/// </summary>
+		[Association(ThisKey="TransactionTypeId", OtherKey="TransactionTypeId", CanBeNull=true, Relationship=LinqToDB.Mapping.Relationship.OneToMany, IsBackReference=true)]
+		public IEnumerable<Transaction> Transactions { get; set; }
+
+		#endregion
+	}
+
 	[Table(Schema="dbo", Name="Security")]
 	public partial class Security
 	{
@@ -167,10 +185,11 @@ namespace Making.Cents.Data.Models
 	[Table(Schema="dbo", Name="Transaction")]
 	public partial class Transaction
 	{
-		[ValueConverter(ConverterType = typeof(TransactionIdConverter)), PrimaryKey,  NotNull] public TransactionId TransactionId { get; set; } // uniqueidentifier
-		[Column,                                                                      NotNull] public DateTime      Date          { get; set; } // date
-		[Column,                                                                      NotNull] public string        Description   { get; set; } // varchar(255)
-		[Column,                                                            Nullable         ] public string        Memo          { get; set; } // varchar(255)
+		[ValueConverter(ConverterType = typeof(TransactionIdConverter)), PrimaryKey,                                                         NotNull] public TransactionId     TransactionId     { get; set; } // uniqueidentifier
+		[Column,                                                                                                                             NotNull] public DateTime          Date              { get; set; } // date
+		[Column,                                                         ValueConverter(ConverterType = typeof(TransactionTypeIdConverter)), NotNull] public TransactionTypeId TransactionTypeId { get; set; } // int
+		[Column,                                                                                                                             NotNull] public string            Description       { get; set; } // varchar(255)
+		[Column,                                                            Nullable                                                                ] public string            Memo              { get; set; } // varchar(255)
 
 		#region Associations
 
@@ -179,6 +198,12 @@ namespace Making.Cents.Data.Models
 		/// </summary>
 		[Association(ThisKey="TransactionId", OtherKey="TransactionId", CanBeNull=true, Relationship=LinqToDB.Mapping.Relationship.OneToMany, IsBackReference=true)]
 		public IEnumerable<TransactionItem> TransactionItems { get; set; }
+
+		/// <summary>
+		/// FK_Transaction_TransactionType
+		/// </summary>
+		[Association(ThisKey="TransactionTypeId", OtherKey="TransactionTypeId", CanBeNull=false, Relationship=LinqToDB.Mapping.Relationship.ManyToOne, KeyName="FK_Transaction_TransactionType", BackReferenceName="Transactions")]
+		public EnumTable_TransactionType TransactionType { get; set; }
 
 		#endregion
 	}

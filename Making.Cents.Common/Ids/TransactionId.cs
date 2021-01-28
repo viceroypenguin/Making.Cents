@@ -15,6 +15,15 @@ namespace Making.Cents.Common.Ids
 			new ClearedStatusId((int)clearedStatus);
 	}
 
+	[WrapperValueObject(typeof(int))]
+	public partial struct TransactionTypeId
+	{
+		public static implicit operator TransactionType(TransactionTypeId transactionType) =>
+			(TransactionType)transactionType.Value;
+		public static implicit operator TransactionTypeId(TransactionType transactionType) =>
+			new TransactionTypeId((int)transactionType);
+	}
+
 	[WrapperValueObject]
 	public partial struct TransactionId { }
 

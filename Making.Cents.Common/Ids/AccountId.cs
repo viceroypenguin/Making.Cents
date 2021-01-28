@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 using Making.Cents.Common.Enums;
+using WrapperValueObject;
 
 namespace Making.Cents.Common.Ids
 {
-	[StronglyTypedId(backingType: StronglyTypedIdBackingType.Int)]
+	[WrapperValueObject(typeof(int))]
 	public partial struct AccountTypeId
 	{
 		public static implicit operator AccountType(AccountTypeId typeId) =>
@@ -14,7 +15,7 @@ namespace Making.Cents.Common.Ids
 			new AccountTypeId((int)type);
 	}
 
-	[StronglyTypedId(backingType: StronglyTypedIdBackingType.Int)]
+	[WrapperValueObject(typeof(int))]
 	public partial struct AccountSubTypeId
 	{
 		public static implicit operator AccountSubType(AccountSubTypeId subTypeId) =>
@@ -23,12 +24,6 @@ namespace Making.Cents.Common.Ids
 			new AccountSubTypeId((int)subType);
 	}
 
-	[StronglyTypedId(backingType: StronglyTypedIdBackingType.Guid)]
-	public partial struct AccountId
-	{
-		public static explicit operator Guid(AccountId accountId) =>
-			accountId.Value;
-		public static implicit operator AccountId(Guid accountId) =>
-			new AccountId(accountId);
-	}
+	[WrapperValueObject]
+	public partial struct AccountId { }
 }

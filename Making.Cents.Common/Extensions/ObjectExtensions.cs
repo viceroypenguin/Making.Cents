@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,7 +13,8 @@ namespace Making.Cents.Common.Extensions
 		public static Mapper<TSource> Map<TSource>(this TSource source) =>
 			new Mapper<TSource>(source);
 
-		private static Dictionary<(Type source, Type target), object> s_initFunc = new();
+		private static ConcurrentDictionary<(Type source, Type target), object> s_initFunc = new();
+		private static ConcurrentDictionary<(Type source, Type target), object> s_copyFunc = new();
 
 		public struct Mapper<TSource>
 		{
@@ -21,30 +24,76 @@ namespace Making.Cents.Common.Extensions
 				_source = source;
 
 			public TTarget To<TTarget>()
+				where TTarget : new()
 			{
-				var obj = s_initFunc.GetOrDefault((typeof(TSource), typeof(TTarget)));
-				if (obj is not Func<TSource, TTarget> func)
-				{
-					func = BuildInitMap<TTarget>();
-					s_initFunc = new Dictionary<(Type source, Type target), object>(s_initFunc)
-					{
-						[(typeof(TSource), typeof(TTarget))] = func,
-					};
-				}
+				var func = (Func<TSource, TTarget>)s_initFunc.GetOrAdd(
+					(typeof(TSource), typeof(TTarget)),
+					_ => BuildInitMap<TTarget>());
 
 				return func(_source);
 			}
 
 			private static Func<TSource, TTarget> BuildInitMap<TTarget>()
+				where TTarget : new()
 			{
-				throw new NotImplementedException();
+				var p = Expression.Parameter(typeof(TSource), "source");
+
+				var mappings = typeof(TSource).GetProperties()
+					.FullOuterJoin(
+						typeof(TTarget).GetProperties(),
+						l => l.Name,
+						r => r.Name)
+					.Where(x => x.left != default && x.right != default)
+					.Select(x =>
+						Expression.Bind(
+							x.right!,
+							Expression.MakeMemberAccess(
+								p, x.left!)));
+
+				return Expression
+					.Lambda<Func<TSource, TTarget>>(
+						Expression.MemberInit(
+							Expression.New(typeof(TTarget)),
+							mappings),
+						p)
+					.Compile();
 			}
 
 			public TTarget To<TTarget>(TTarget destination)
 			{
-				throw new NotImplementedException();
+				var func = (Action<TSource, TTarget>)s_copyFunc.GetOrAdd(
+					(typeof(TSource), typeof(TTarget)),
+					_ => BuildCopyMap<TTarget>());
+
+				func(_source, destination);
+				return destination;
+			}
+
+			private static Action<TSource, TTarget> BuildCopyMap<TTarget>()
+			{
+				var src = Expression.Parameter(typeof(TSource), "source");
+				var tgt = Expression.Parameter(typeof(TTarget), "target");
+
+				var mappings = typeof(TSource).GetProperties()
+					.FullOuterJoin(
+						typeof(TTarget).GetProperties(),
+						l => l.Name,
+						r => r.Name)
+					.Where(x => x.left != default && x.right != default)
+					.Select(x =>
+						Expression.Assign(
+							Expression.MakeMemberAccess(
+								tgt, x.right!),
+							Expression.MakeMemberAccess(
+								src, x.left!)));
+
+				return Expression
+					.Lambda<Action<TSource, TTarget>>(
+						Expression.Block(mappings),
+						src,
+						tgt)
+					.Compile();
 			}
 		}
-
 	}
 }

@@ -13,14 +13,12 @@ namespace Making.Cents.Wpf.Common.Behaviors
 	public partial class IsVisibleChangedBehavior : Behavior<UserControl>
 	{
 		public static readonly DependencyProperty CommandProperty =
-			Gen.Command<ICommand>();
+			Gen.Command<ICommand?>();
 
-		private ICommand? _command;
 		private static void CommandPropertyChanged(
 			IsVisibleChangedBehavior self,
 			DependencyPropertyChangedEventArgs e)
 		{
-			self._command = e.NewValue as ICommand;
 			self.Update();
 		}
 
@@ -46,9 +44,9 @@ namespace Making.Cents.Wpf.Common.Behaviors
 		private bool _currentStatus = false;
 		private void Update(bool newValue)
 		{
-			if (newValue != _currentStatus && _command != null)
+			if (newValue != _currentStatus)
 			{
-				_command.Execute(newValue);
+				Command?.Execute(newValue);
 				_currentStatus = newValue;
 			}
 		}

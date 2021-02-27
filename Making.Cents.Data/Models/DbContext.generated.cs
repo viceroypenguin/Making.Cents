@@ -143,9 +143,10 @@ namespace Making.Cents.Data.Models
 	[Table(Schema="dbo", Name="Security")]
 	public partial class Security
 	{
-		[ValueConverter(ConverterType = typeof(SecurityIdConverter)), PrimaryKey, NotNull] public SecurityId SecurityId { get; set; } // uniqueidentifier
-		[Column,                                                                  NotNull] public string     Ticker     { get; set; } // varchar(50)
-		[Column,                                                                  NotNull] public string     Name       { get; set; } // varchar(200)
+		[ValueConverter(ConverterType = typeof(SecurityIdConverter)), PrimaryKey,  NotNull] public SecurityId SecurityId  { get; set; } // uniqueidentifier
+		[Column,                                                                   NotNull] public string     Ticker      { get; set; } // varchar(50)
+		[Column,                                                                   NotNull] public string     Name        { get; set; } // varchar(200)
+		[Column,                                                         Nullable         ] public string     PlaidSource { get; set; } // varchar(50)
 
 		#region Associations
 

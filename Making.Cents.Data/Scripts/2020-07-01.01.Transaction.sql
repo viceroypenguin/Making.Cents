@@ -4,9 +4,10 @@
 		constraint [PK_Security] primary key,
 	Ticker varchar(50) not null,
 	Name varchar(200) not null,
+	PlaidSource varchar(50) null,
 );
 
-insert Security values('ca000000-0000-0000-0000-000000000000', 'CASH', 'CASH');
+insert Security values('ca000000-0000-0000-0000-000000000000', 'CASH', 'CASH', null);
 
 create table SecurityValue
 (

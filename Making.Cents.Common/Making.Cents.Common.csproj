@@ -6,7 +6,7 @@
 		<PackageReference Include="Going.Plaid" Version="2.*" />
 		<PackageReference Include="Newtonsoft.Json" Version="12.*" />
 		<PackageReference Include="System.Net.Http.Json" Version="5.*" />
-		<PackageReference Include="WrapperValueObject.Generator" Version="0.0.1-alpha08">
+		<PackageReference Include="WrapperValueObject.Generator" Version="0.*">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 		</PackageReference>

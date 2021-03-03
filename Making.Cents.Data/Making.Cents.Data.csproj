@@ -4,7 +4,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Dawn.Guard" Version="1.*" />
-		<PackageReference Include="Enums.NET" Version="3.*" />
+		<PackageReference Include="Enums.NET" Version="4.*" />
 		<PackageReference Include="linq2db" Version="3.*" />
 		<PackageReference Include="linq2db.SqlServer" Version="3.*" />
 		<PackageReference Include="Microsoft.Data.SqlClient" Version="2.*" />

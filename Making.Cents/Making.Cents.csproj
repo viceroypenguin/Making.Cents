@@ -8,7 +8,6 @@
   <ItemGroup>
     <PackageReference Include="DevExpressMvvm" Version="20.*" />
     <PackageReference Include="DryIoc.dll" Version="4.*" />
-    <PackageReference Include="Enums.NET" Version="3.*" />
     <PackageReference Include="Fody" Version="6.*">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

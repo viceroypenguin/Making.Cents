@@ -6,8 +6,10 @@ using Making.Cents.Common.Support;
 
 namespace Making.Cents.Common.Models
 {
-	public class Account
+	public class Account : KeyedModel<AccountId>
 	{
+		protected override AccountId GetKey() => AccountId;
+
 		public static AccountId UnrealizedGain { get; } =
 			new Guid("01000000-0000-0000-0000-000000000000");
 

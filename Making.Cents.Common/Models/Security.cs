@@ -5,8 +5,10 @@ using Making.Cents.Common.Ids;
 
 namespace Making.Cents.Common.Models
 {
-	public class Security
+	public class Security : KeyedModel<SecurityId>
 	{
+		protected override SecurityId GetKey() => SecurityId;
+
 		public static SecurityId CashSecurityId { get; } =
 			new Guid("ca000000-0000-0000-0000-000000000000");
 

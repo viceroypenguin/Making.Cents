@@ -9,8 +9,9 @@ using Making.Cents.Common.Support;
 
 namespace Making.Cents.Common.Models
 {
-	public class Transaction
+	public class Transaction : KeyedModel<TransactionId>
 	{
+		protected override TransactionId GetKey() => TransactionId;
 		public TransactionId TransactionId { get; set; } = SequentialGuid.Next();
 		public DateTime Date { get; set; }
 		public TransactionType TransactionType { get; set; }
@@ -23,8 +24,9 @@ namespace Making.Cents.Common.Models
 		public decimal Balance => TransactionItems?.Sum(i => i.Amount) ?? 0m;
 	}
 
-	public class TransactionItem
+	public class TransactionItem : KeyedModel<TransactionItemId>
 	{
+		protected override TransactionItemId GetKey() => TransactionItemId;
 		public TransactionItemId TransactionItemId { get; set; }
 		public AccountId AccountId { get; set; }
 		public SecurityId SecurityId { get; set; }

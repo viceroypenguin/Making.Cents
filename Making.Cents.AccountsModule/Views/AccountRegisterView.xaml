@@ -3,13 +3,125 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:views="clr-namespace:Making.Cents.AccountsModule.Views"
-			 xmlns:vm="clr-namespace:Making.Cents.AccountsModule.ViewModels"
+             xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
+             xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
+             xmlns:fa="clr-namespace:Meziantou.WpfFontAwesome;assembly=Meziantou.WpfFontAwesome"
+			 xmlns:e="clr-namespace:Making.Cents.Common.Enums;assembly=Making.Cents.Common"
+			 xmlns:m="clr-namespace:Making.Cents.Common.Models;assembly=Making.Cents.Common"
+			 xmlns:views="clr-namespace:Making.Cents.AccountsModule.Views"
+			 xmlns:vm="clr-namespace:Making.Cents.AccountsModule.ViewModels" xmlns:converters="clr-namespace:Making.Cents.Wpf.Common.Converters;assembly=Making.Cents.Wpf.Common"
 			 d:DataContext="{d:DesignInstance vm:AccountRegisterViewModel}"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+
+	<UserControl.Resources>
+		<CollectionViewSource x:Key="TransactionTypes"
+							  Source="{Binding TransactionTypes}" />
+		<CollectionViewSource x:Key="ClearedStatuses"
+							  Source="{Binding ClearedStatuses}" />
+
+		<dx:BooleanToVisibilityConverter x:Key="BoolToVisConverter" />
+		<dx:BooleanToVisibilityConverter x:Key="InvBoolToVisConverter" Inverse="True" />
+		<converters:EqualityConverter x:Key="EqualityConverter" />
+
+		<DataTemplate x:Key="AccountEditor"
+					  DataType="{x:Type vm:TransactionViewModel}">
+			<Grid>
+				<Grid Visibility="{Binding IsSplit, Converter={StaticResource BoolToVisConverter}}">
+					<TextBlock IsEnabled="False" Text="-- Split --" />
+				</Grid>
+
+				<Grid Visibility="{Binding IsSplit, Converter={StaticResource InvBoolToVisConverter}}">
+					<Grid Visibility="{Binding TransactionType, 
+											   Converter={StaticResource EqualityConverter},
+											   ConverterParameter={x:Static e:TransactionType.Cash}}">
+						<ComboBox ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}},
+							                            Path=DataContext.Accounts}"
+								  DisplayMemberPath="Name"
+								  SelectedItem="{Binding Account, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+								  IsSynchronizedWithCurrentItem="True" />
+					</Grid>
+				</Grid>
+			</Grid>
+		</DataTemplate>
+	</UserControl.Resources>
 	
-    <Grid>
-		<DataGrid ItemsSource="{Binding Transactions}" />
+	<Grid>
+		<DataGrid ItemsSource="{Binding Transactions}"
+				  AutoGenerateColumns="False">
+
+			<DataGrid.Resources>
+				<Style x:Key="RightAlign" TargetType="DataGridCell">
+					<Setter Property="TextBlock.TextAlignment" Value="Right" />
+				</Style>
+			</DataGrid.Resources>
+
+			<DataGrid.Columns>
+				<DataGridTemplateColumn Header="Date">
+					<DataGridTemplateColumn.CellTemplate>
+						<DataTemplate>
+							<TextBlock Text="{Binding Date, StringFormat={}{0:d}}" />
+						</DataTemplate>
+					</DataGridTemplateColumn.CellTemplate>
+					<DataGridTemplateColumn.CellEditingTemplate>
+						<DataTemplate>
+							<DatePicker SelectedDate="{Binding Date, UpdateSourceTrigger=LostFocus}"
+										IsTodayHighlighted="True" />
+						</DataTemplate>
+					</DataGridTemplateColumn.CellEditingTemplate>
+				</DataGridTemplateColumn>
+
+				<DataGridComboBoxColumn Header="Type"
+										ItemsSource="{Binding Source={StaticResource TransactionTypes}}"
+										SelectedValueBinding="{Binding TransactionType, UpdateSourceTrigger=LostFocus}"
+										SelectedValuePath="Value"
+										DisplayMemberPath="Name" />
+
+				<DataGridTextColumn Header="Description" Width="*"
+									Binding="{Binding Description, UpdateSourceTrigger=LostFocus}" />
+
+				<DataGridTextColumn Header="Memo" Width="*"
+									Binding="{Binding Memo, UpdateSourceTrigger=LostFocus}" />
+
+				<DataGridTemplateColumn Header="Account">
+					<DataGridTemplateColumn.CellTemplate>
+						<DataTemplate>
+							<TextBlock Text="{Binding AccountName}" />
+						</DataTemplate>
+					</DataGridTemplateColumn.CellTemplate>
+					<DataGridTemplateColumn.CellEditingTemplate>
+						<DataTemplate>
+							<DockPanel>
+								<Button DockPanel.Dock="Right"
+										ToolTip="Split">
+									<fa:FontAwesomeIcon RegularIcon="CaretSquareDown" />
+								</Button>
+								<ContentControl ContentTemplate="{StaticResource AccountEditor}" 
+												Content="{Binding}"/>
+							</DockPanel>
+						</DataTemplate>
+					</DataGridTemplateColumn.CellEditingTemplate>
+				</DataGridTemplateColumn>
+
+				<DataGridTextColumn Header="Debit" Width="100"
+									Binding="{Binding Debit, StringFormat={}{0:C}, UpdateSourceTrigger=LostFocus}"
+									CellStyle="{StaticResource RightAlign}" />
+				<DataGridTextColumn Header="Credit" Width="100"
+									Binding="{Binding Credit, StringFormat={}{0:C}, UpdateSourceTrigger=LostFocus}"
+									CellStyle="{StaticResource RightAlign}" />
+
+				<DataGridComboBoxColumn Header="Cleared"
+										ItemsSource="{Binding Source={StaticResource ClearedStatuses}}"
+										SelectedValueBinding="{Binding ClearedStatus, UpdateSourceTrigger=LostFocus}"
+										SelectedValuePath="Value"
+										DisplayMemberPath="Name" />
+
+				<DataGridTextColumn Header="Balance" Width="100"
+									Binding="{Binding RunningTotal, StringFormat={}{0:C}}" 
+									IsReadOnly="True"
+									CellStyle="{StaticResource RightAlign}" />
+
+			</DataGrid.Columns>
+		</DataGrid>
 	</Grid>
 </UserControl>

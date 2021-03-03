@@ -58,6 +58,9 @@ namespace Making.Cents.Data.Services
 		}
 		#endregion
 
+		public IEnumerable<Security> GetSecurities() =>
+			_securities.Values;
+
 		public Security GetSecurity(SecurityId securityId) =>
 			_securities[securityId];
 	}

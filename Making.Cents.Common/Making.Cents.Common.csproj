@@ -4,6 +4,10 @@
 
 	<ItemGroup>
 		<PackageReference Include="Going.Plaid" Version="2.*" />
+		<PackageReference Include="Microsoft.Windows.CsWin32" Version="0.1.378-beta">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+		</PackageReference>
 		<PackageReference Include="Newtonsoft.Json" Version="12.*" />
 		<PackageReference Include="System.Net.Http.Json" Version="5.*" />
 		<PackageReference Include="WrapperValueObject.Generator" Version="0.*">

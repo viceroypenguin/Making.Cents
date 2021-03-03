@@ -2,16 +2,14 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
+using Microsoft.Windows.Sdk;
 
 namespace Making.Cents.Common.Support
 {
 	public static class SequentialGuid
 	{
-		[DllImport("rpcrt4.dll", SetLastError = true)]
-		private static extern int UuidCreateSequential(out Guid guid);
-
 		private static Guid GetNextSystemGuid() =>
-			UuidCreateSequential(out var guid) != 0
+			PInvoke.UuidCreateSequential(out var guid) != 0
 				? Guid.NewGuid()
 				: guid;
 

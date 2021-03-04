@@ -8,9 +8,9 @@ using Going.Plaid;
 using Going.Plaid.Entity;
 using Going.Plaid.Management;
 using Making.Cents.Common.Extensions;
+using Making.Cents.Common.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using PlaidOptions = Making.Cents.PlaidModule.Models.PlaidOptions;
 
 namespace Making.Cents.PlaidModule.Views
 {
@@ -21,12 +21,12 @@ namespace Making.Cents.PlaidModule.Views
 	{
 		#region Initialization
 		private readonly PlaidClient _plaidClient;
-		private readonly PlaidOptions _plaidOptions;
+		private readonly PlaidTokens _plaidOptions;
 		private readonly ILogger<PlaidLinkWindow> _logger;
 
 		public PlaidLinkWindow(
 			PlaidClient plaidClient,
-			IOptionsSnapshot<PlaidOptions> plaidOptions,
+			IOptionsSnapshot<PlaidTokens> plaidOptions,
 			ILogger<PlaidLinkWindow> logger)
 		{
 			_plaidClient = plaidClient;

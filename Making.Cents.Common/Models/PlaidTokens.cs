@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Making.Cents.PlaidModule.Models
+namespace Making.Cents.Common.Models
 {
-	public class PlaidOptions
+	public class PlaidTokens
 	{
 		public Dictionary<string, string> AccessTokens { get; init; } =
 			new Dictionary<string, string>();

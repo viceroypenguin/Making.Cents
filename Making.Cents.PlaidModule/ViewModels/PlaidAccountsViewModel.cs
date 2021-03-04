@@ -12,7 +12,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PlaidAccountSubType = Going.Plaid.Entity.AccountSubType;
 using PlaidAccountType = Going.Plaid.Entity.AccountType;
-using PlaidOptions = Making.Cents.PlaidModule.Models.PlaidOptions;
 using PlaidLinkWindow = Making.Cents.PlaidModule.Views.PlaidLinkWindow;
 using Making.Cents.Wpf.Common.ViewModels;
 
@@ -33,7 +32,7 @@ namespace Making.Cents.PlaidModule.ViewModels
 		public PlaidAccountsViewModel(
 			AccountService accountService,
 			PlaidClient plaidClient,
-			IOptionsSnapshot<PlaidOptions> plaidOptions,
+			IOptionsSnapshot<PlaidTokens> plaidOptions,
 			Func<PlaidLinkWindow> newPlaidLinkWindow,
 			ILogger<PlaidAccountsViewModel> logger)
 		{

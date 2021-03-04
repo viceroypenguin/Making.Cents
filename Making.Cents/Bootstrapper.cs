@@ -220,7 +220,7 @@ namespace Making.Cents
 			container.Register<DbContext>(Reuse.Transient, setup: Setup.With(allowDisposableTransient: true));
 
 			var config = container.Resolve<IConfigurationRoot>().GetSection("Plaid");
-			container.Configure<Making.Cents.PlaidModule.Models.PlaidOptions>(config);
+			container.Configure<Making.Cents.Common.Models.PlaidTokens>(config);
 			container.Configure<Going.Plaid.PlaidOptions>(config);
 			container.Register<PlaidClient>(Reuse.Singleton);
 		}

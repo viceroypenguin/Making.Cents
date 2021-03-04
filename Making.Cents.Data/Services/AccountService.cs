@@ -2,15 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Text.Json;
 using Dawn;
 using LinqToDB;
+using Making.Cents.Common.Ids;
 using Making.Cents.Common.Models;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-
-using PlaidAccountType = Going.Plaid.Entity.AccountType;
-using PlaidAccountSubType = Going.Plaid.Entity.AccountSubType;
-using Making.Cents.Common.Ids;
 
 namespace Making.Cents.Data.Services
 {
@@ -47,7 +44,7 @@ namespace Making.Cents.Data.Services
 						PlaidSource = a.PlaidSource,
 						PlaidAccountData = string.IsNullOrWhiteSpace(a.PlaidAccountData)
 							? null
-							: JsonConvert.DeserializeObject<Going.Plaid.Entity.Account>(a.PlaidAccountData),
+							: JsonSerializer.Deserialize<Going.Plaid.Entity.Account>(a.PlaidAccountData, null),
 
 						ShowOnMainScreen = a.ShowOnMainScreen,
 					})
@@ -84,7 +81,7 @@ namespace Making.Cents.Data.Services
 
 							PlaidSource = account.PlaidSource,
 							PlaidAccountData = account.PlaidAccountData != null
-								? JsonConvert.SerializeObject(account.PlaidAccountData)
+								? JsonSerializer.Serialize(account.PlaidAccountData)
 								: null,
 
 							ShowOnMainScreen = account.ShowOnMainScreen,

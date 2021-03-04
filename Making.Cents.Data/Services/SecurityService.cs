@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using LinqToDB;
+using Making.Cents.Common.Extensions;
 using Making.Cents.Common.Ids;
 using Making.Cents.Common.Models;
 using Making.Cents.Data.Support;
@@ -26,6 +27,7 @@ namespace Making.Cents.Data.Services
 		}
 
 		private Dictionary<SecurityId, Security> _securities = null!;
+		private Dictionary<string, Security> _securitiesByPlaidId = null!;
 		private MutableLookup<SecurityId, Security> _securityValues = null!;
 
 		public async Task InitializeAsync()
@@ -33,14 +35,21 @@ namespace Making.Cents.Data.Services
 			_logger.LogTrace("Downloading accounts from database.");
 			using (var c = _context())
 			{
-				_securities = await c.Securities
+				var securities = await c.Securities
 					.Select(s => new Security
 					{
 						SecurityId = s.SecurityId,
 						Name = s.Name,
 						Ticker = s.Ticker,
+						PlaidSource = s.PlaidSource,
+						IsCashEquivalent = s.IsCashEquivalent,
 					})
-					.ToDictionaryAsync(s => s.SecurityId);
+					.ToListAsync();
+				_securities = securities
+					.ToDictionary(s => s.SecurityId);
+				_securitiesByPlaidId = securities
+					.Where(s => s.PlaidSource != null)
+					.ToDictionary(s => s.PlaidSource!);
 
 				_securityValues = (await c.SecurityValues
 					.Select(sv => new Security
@@ -61,7 +70,10 @@ namespace Making.Cents.Data.Services
 		public IEnumerable<Security> GetSecurities() =>
 			_securities.Values;
 
-		public Security GetSecurity(SecurityId securityId) =>
+		public Security GetSecurityById(SecurityId securityId) =>
 			_securities[securityId];
+
+		public Security? GetSecurityByPlaidId(string plaidId) =>
+			_securitiesByPlaidId.GetOrDefault(plaidId);
 	}
 }

@@ -64,7 +64,7 @@ namespace Making.Cents.Data.Services
 								PlaidTransactionData = ti.PlaidTransactionData,
 
 								Account = _accountService.GetAccount(ti.AccountId),
-								Security = _securityService.GetSecurity(ti.SecurityId),
+								Security = _securityService.GetSecurityById(ti.SecurityId),
 							})
 							.ToList(),
 					})

@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<Import Project="../Common.props" />
+
+	<ItemGroup>
+	  <PackageReference Include="Dawn.Guard" Version="1.*" />
+	  <PackageReference Include="System.Linq.Async" Version="5.*" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Making.Cents.Common\Making.Cents.Common.csproj" />
+		<ProjectReference Include="..\Making.Cents.Data\Making.Cents.Data.csproj" />
+	</ItemGroup>
+
+</Project>

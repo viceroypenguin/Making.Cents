@@ -7,8 +7,8 @@ using Making.Cents.AccountsModule.ViewModels;
 using Making.Cents.AccountsModule.Views;
 using Making.Cents.PlaidModule.ViewModels;
 using Making.Cents.PlaidModule.Views;
-using Making.Cents.Wpf.Common.Contracts;
-using Making.Cents.Wpf.Common.ViewModels;
+using Making.Cents.Common.Contracts;
+using Making.Cents.Common.ViewModels;
 
 namespace Making.Cents.ViewModels
 {

@@ -6,16 +6,23 @@
 	</PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DevExpressMvvm" Version="20.*" />
+		<PackageReference Include="boilerplatezero" Version="1.*">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="DevExpressMvvm" Version="20.*" />
     <PackageReference Include="DryIoc.dll" Version="4.*" />
     <PackageReference Include="Fody" Version="6.*">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Going.Plaid" Version="2.*" />
+    <PackageReference Include="Meziantou.WpfFontAwesome" Version="5.*" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.*" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.*" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.*" />
 		<PackageReference Include="Microsoft.Extensions.Options" Version="5.*" />
+		<PackageReference Include="Microsoft.Web.WebView2" Version="1.*" />
 		<PackageReference Include="morelinq.temp" Version="3.*" />
     <PackageReference Include="PropertyChanged.Fody" Version="3.*" PrivateAssets="All" />
     <PackageReference Include="Serilog" Version="2.*" />
@@ -30,14 +37,19 @@
   <ItemGroup>
 		<ProjectReference Include="..\Making.Cents.Common\Making.Cents.Common.csproj" />
 		<ProjectReference Include="..\Making.Cents.Data\Making.Cents.Data.csproj" />
-		<ProjectReference Include="..\Making.Cents.AccountsModule\Making.Cents.AccountsModule.csproj" />
-		<ProjectReference Include="..\Making.Cents.PlaidModule\Making.Cents.PlaidModule.csproj" />
 		<ProjectReference Include="..\Making.Cents.Qif\Making.Cents.Qif.csproj" />
+		<ProjectReference Include="..\Making.Cents.Services\Making.Cents.Services.csproj" />
   </ItemGroup>
 
 	<ItemGroup>
 		<None Include="appsettings.json" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />
 		<None Include="appsettings.*.json" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="Plaid\Resources\PlaidLink.html">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 
 </Project>

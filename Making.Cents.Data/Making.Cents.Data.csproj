@@ -3,25 +3,21 @@
 	<Import Project="../Common.props" />
 
 	<ItemGroup>
-		<PackageReference Include="Dawn.Guard" Version="1.*" />
 		<PackageReference Include="Enums.NET" Version="4.*" />
 		<PackageReference Include="linq2db" Version="3.*" />
 		<PackageReference Include="linq2db.SqlServer" Version="3.*" />
 		<PackageReference Include="Microsoft.Data.SqlClient" Version="2.*" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="5.*" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.*" />
-    <PackageReference Include="morelinq.temp" Version="3.*" />
-    <PackageReference Include="System.Linq.Async" Version="5.*" />
-    <PackageReference Include="System.Net.Http.Json" Version="5.*" />
 	</ItemGroup>
-
-  <ItemGroup>
-		<EmbeddedResource Include="Scripts\**" />
-  </ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\Making.Cents.Common\Making.Cents.Common.csproj" />
 	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="Scripts\**" />
+  </ItemGroup>
 
 	<ItemGroup>
 	  <None Update="Models\DbContext.tt">
@@ -41,4 +37,5 @@
 	    <DependentUpon>DbContext.tt</DependentUpon>
 	  </Compile>
 	</ItemGroup>
+
 </Project>

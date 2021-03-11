@@ -9,11 +9,38 @@ namespace Making.Cents.Common.Extensions
 {
 	public static class EnumerableExtensions
 	{
+		#region Sequential Group By
+		public static IEnumerable<IGrouping<TKey, TElement>> SequentialGroupBy<TKey, TElement>(
+			this IEnumerable<TElement> enumerable,
+			Func<TElement, TKey> getKey)
+			where TKey : IEquatable<TKey>
+		{
+			using var enumerator = enumerable.GetEnumerator();
+			if (!enumerator.MoveNext()) yield break;
+
+			var group = new Grouping<TKey, TElement>(getKey(enumerator.Current));
+			do
+			{
+				var key = getKey(enumerator.Current);
+				if (!key.Equals(group.Key))
+				{
+					yield return group;
+					group = new Grouping<TKey, TElement>(key);
+				}
+
+				group.Add(enumerator.Current);
+			} while (enumerator.MoveNext());
+
+			yield return group;
+		}
+		#endregion
+
+		#region Full Outer Join
 		public static IEnumerable<(T? left, U? right)> FullOuterJoin<T, U, K>(
 			this IEnumerable<T> left,
 			IEnumerable<U> right,
 			Func<T, K> leftKeySelector,
-			Func<U, K> rightKeySelector) 
+			Func<U, K> rightKeySelector)
 			where K : IComparable<K>
 		{
 			if (left == null)
@@ -91,5 +118,60 @@ namespace Making.Cents.Common.Extensions
 				}
 			}
 		}
+		#endregion
+
+		#region SelectIndex
+		public static IEnumerable<(T item, int index)> SelectIndex<T>(
+			this IEnumerable<T> enumerable)
+		{
+			var i = 0;
+			foreach (var item in enumerable)
+				yield return (item, i++);
+		}
+		#endregion
+
+		#region DefaultIfNullOrEmpty
+		public static IEnumerable<T> DefaultIfNullOrEmpty<T>(this IEnumerable<T> enumerable, T defaultValue)
+		{
+			if (enumerable == null)
+			{
+				yield return defaultValue;
+				yield break;
+			}
+
+			var enumerator = enumerable.GetEnumerator();
+			if (!enumerator.MoveNext())
+			{
+				yield return defaultValue;
+				yield break;
+			}
+
+			do
+			{
+				yield return enumerator.Current;
+			} while (enumerator.MoveNext());
+		}
+
+		public static IEnumerable<T> DefaultIfNullOrEmpty<T>(this IEnumerable<T> enumerable, Func<T> defaultValue)
+		{
+			if (enumerable == null)
+			{
+				yield return defaultValue();
+				yield break;
+			}
+
+			var enumerator = enumerable.GetEnumerator();
+			if (!enumerator.MoveNext())
+			{
+				yield return defaultValue();
+				yield break;
+			}
+
+			do
+			{
+				yield return enumerator.Current;
+			} while (enumerator.MoveNext());
+		}
+		#endregion
 	}
 }

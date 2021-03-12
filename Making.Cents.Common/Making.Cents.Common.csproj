@@ -8,6 +8,7 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 		</PackageReference>
+		<PackageReference Include="morelinq.temp" Version="3.*" />
 		<PackageReference Include="System.Net.Http.Json" Version="5.*" />
 		<PackageReference Include="WrapperValueObject.Generator" Version="0.*">
 			<PrivateAssets>all</PrivateAssets>

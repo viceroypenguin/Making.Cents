@@ -15,7 +15,7 @@ using Making.Cents.Common.Support;
 using Making.Cents.Common.ViewModels;
 using Making.Cents.Data.Services;
 
-namespace Making.Cents.AccountsModule.ViewModels
+namespace Making.Cents.Accounts.ViewModels
 {
 	public class AccountsEditorViewModel : ViewModelBase
 	{

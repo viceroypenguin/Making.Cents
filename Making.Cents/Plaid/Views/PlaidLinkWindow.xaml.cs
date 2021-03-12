@@ -12,7 +12,7 @@ using Making.Cents.Common.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Making.Cents.PlaidModule.Views
+namespace Making.Cents.Plaid.Views
 {
 	/// <summary>
 	/// Interaction logic for PlaidLinkWindow.xaml

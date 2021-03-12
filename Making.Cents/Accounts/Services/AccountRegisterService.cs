@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Making.Cents.AccountsModule.ViewModels;
+using Making.Cents.Transactions.ViewModels;
 using Making.Cents.Common.Extensions;
 using Making.Cents.Common.Ids;
 using Making.Cents.Common.Contracts;
 
-namespace Making.Cents.AccountsModule.Services
+namespace Making.Cents.Accounts.Services
 {
 	public class AccountRegisterService
 	{

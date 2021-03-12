@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DryIoc;
-using Making.Cents.PlaidModule.ViewModels;
-using Making.Cents.PlaidModule.Views;
+using Making.Cents.Plaid.ViewModels;
+using Making.Cents.Plaid.Views;
 
 namespace Making.Cents
 {

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:ct="clr-namespace:ChromeTabs;assembly=ChromeTabs"
 		xmlns:core="clr-namespace:Making.Cents.Common.Views"
-		xmlns:av="clr-namespace:Making.Cents.AccountsModule.Views"
+		xmlns:av="clr-namespace:Making.Cents.Accounts.Views"
         xmlns:views="clr-namespace:Making.Cents.Views"
 		xmlns:vm="clr-namespace:Making.Cents.ViewModels" 
 		mc:Ignorable="d"

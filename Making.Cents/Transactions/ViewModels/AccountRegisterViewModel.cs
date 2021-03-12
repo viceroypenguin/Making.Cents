@@ -14,7 +14,7 @@ using Making.Cents.Common.ViewModels;
 using Making.Cents.Data.Services;
 using MoreLinq;
 
-namespace Making.Cents.AccountsModule.ViewModels
+namespace Making.Cents.Transactions.ViewModels
 {
 	public class AccountRegisterViewModel : ViewModelBase, IMainWindowTab
 	{

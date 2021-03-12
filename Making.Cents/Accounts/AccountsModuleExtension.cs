@@ -4,17 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DryIoc;
-using Making.Cents.AccountsModule.Services;
-using Making.Cents.AccountsModule.ViewModels;
+using Making.Cents.Accounts.Services;
+using Making.Cents.Accounts.ViewModels;
 
 namespace Making.Cents
 {
-	public static class AccountModuleExtension
+	public static class AccountsModuleExtension
 	{
 		public static Container RegisterAccountModule(this Container container)
 		{
 			container.Register<AccountRegisterService>(reuse: Reuse.Singleton);
-			container.Register<AccountRegisterViewModel>();
 			container.Register<AccountsEditorViewModel>();
 			container.Register<MainWindowAccountsListViewModel>();
 			return container;

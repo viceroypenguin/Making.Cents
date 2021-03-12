@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DevExpress.Mvvm;
-using Making.Cents.AccountsModule.Services;
+using Making.Cents.Accounts.Services;
 using Making.Cents.Common.Models;
 using Making.Cents.Common.ViewModels;
 using Making.Cents.Data.Services;
 
-namespace Making.Cents.AccountsModule.ViewModels
+namespace Making.Cents.Accounts.ViewModels
 {
 	public class MainWindowAccountsListViewModel : ViewModelBase
 	{

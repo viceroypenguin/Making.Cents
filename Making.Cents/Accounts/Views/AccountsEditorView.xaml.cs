@@ -12,7 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace Making.Cents.AccountsModule.Views
+namespace Making.Cents.Accounts.Views
 {
 	/// <summary>
 	/// Interaction logic for AccountsEditorView.xaml

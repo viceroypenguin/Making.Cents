@@ -13,9 +13,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PlaidAccountSubType = Going.Plaid.Entity.AccountSubType;
 using PlaidAccountType = Going.Plaid.Entity.AccountType;
-using PlaidLinkWindow = Making.Cents.PlaidModule.Views.PlaidLinkWindow;
+using PlaidLinkWindow = Making.Cents.Plaid.Views.PlaidLinkWindow;
 
-namespace Making.Cents.PlaidModule.ViewModels
+namespace Making.Cents.Plaid.ViewModels
 {
 	public class PlaidAccountsViewModel : ViewModelBase
 	{

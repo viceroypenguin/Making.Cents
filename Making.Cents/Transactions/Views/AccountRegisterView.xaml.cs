@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace Making.Cents.AccountsModule.Views
+namespace Making.Cents.Transactions.Views
 {
 	/// <summary>
 	/// Interaction logic for AccountRegisterView.xaml

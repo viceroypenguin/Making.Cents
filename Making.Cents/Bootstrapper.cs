@@ -244,6 +244,7 @@ namespace Making.Cents
 		{
 			container.RegisterAccountModule();
 			container.RegisterPlaidModule();
+			container.RegisterTransactionModule();
 
 			container.RegisterMany<ShellViewModel>(Reuse.Singleton);
 		}

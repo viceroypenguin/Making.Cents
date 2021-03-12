@@ -3,10 +3,10 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using DevExpress.Mvvm;
 using DevExpress.Mvvm.DataAnnotations;
-using Making.Cents.AccountsModule.ViewModels;
-using Making.Cents.AccountsModule.Views;
-using Making.Cents.PlaidModule.ViewModels;
-using Making.Cents.PlaidModule.Views;
+using Making.Cents.Accounts.ViewModels;
+using Making.Cents.Accounts.Views;
+using Making.Cents.Plaid.ViewModels;
+using Making.Cents.Plaid.Views;
 using Making.Cents.Common.Contracts;
 using Making.Cents.Common.ViewModels;
 
